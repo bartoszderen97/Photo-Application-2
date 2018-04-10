@@ -16,12 +16,12 @@
             <GroupBox x:Name="groupBox" Header="Korekcja 1" Height="241" Width="172" Margin="0,0,0,30" Padding="0" BorderBrush="Black">
                 <StackPanel Margin="0,0,0,-0.4">
                     <TextBlock Margin="10,10,0,0" Text="Barwa"/>
-                    <Slider x:Name="barwaSlider" HorizontalAlignment="Left" Margin="0,5,0,0" VerticalAlignment="Top" Width="152" RenderTransformOrigin="0.477,-1.098" Value="5" SmallChange="1" LargeChange="3" TickPlacement="BottomRight" IsSnapToTickEnabled="True"/>
+                    <Slider x:Name="barwaSlider" HorizontalAlignment="Left" Margin="0,5,0,0" VerticalAlignment="Top" Width="152" RenderTransformOrigin="0.477,-1.098" Value="1" SmallChange="0.125" LargeChange="0.25" TickPlacement="BottomRight" IsSnapToTickEnabled="True" Maximum="2" TickFrequency="0.125"/>
                     <TextBlock Margin="10,10,0,0" Text="Nasycenie"/>
-                    <Slider x:Name="nasycenieSlider" HorizontalAlignment="Left" Margin="0,5,0,0" VerticalAlignment="Top" Width="152" RenderTransformOrigin="0.477,-1.098" Value="5" SmallChange="1" LargeChange="3" TickPlacement="BottomRight" IsSnapToTickEnabled="True"/>
+                    <Slider x:Name="nasycenieSlider" HorizontalAlignment="Left" Margin="0,5,0,0" VerticalAlignment="Top" Width="152" RenderTransformOrigin="0.477,-1.098" Value="1" SmallChange="0.125" LargeChange="0.25" TickPlacement="BottomRight" IsSnapToTickEnabled="True" TickFrequency="0.125" Maximum="2"/>
                     <TextBlock Margin="10,10,0,0" Text="Jasność"/>
-                    <Slider x:Name="jasnoscSlider" HorizontalAlignment="Left" Margin="0,5,4,0" VerticalAlignment="Top" Width="152" RenderTransformOrigin="0.477,-1.098" Value="5" SmallChange="1" LargeChange="3" TickPlacement="BottomRight" IsSnapToTickEnabled="True"/>
-                    <Button x:Name="zastosuj1button" Content="Zastosuj" Width="60" Margin="-80,20,0,0" Height="20"/>
+                    <Slider x:Name="jasnoscSlider" HorizontalAlignment="Left" Margin="0,5,4,0" VerticalAlignment="Top" Width="152" RenderTransformOrigin="0.477,-1.098" Value="1" SmallChange="0.125" LargeChange="0.25" TickPlacement="BottomRight" IsSnapToTickEnabled="True" Maximum="2" TickFrequency="0.125"/>
+                    <Button x:Name="zastosuj1button" Content="Zastosuj" Width="60" Margin="-80,20,0,0" Height="20" Click="zastosuj1button_Click"/>
                     <Button x:Name="zresetuj1button" Content="Zresetuj" Width="60" Margin="80,-20,0,0" Height="20" Click="zresetuj1button_Click"/>
                 </StackPanel>
             </GroupBox>

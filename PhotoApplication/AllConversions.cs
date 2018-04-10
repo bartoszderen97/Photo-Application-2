@@ -131,7 +131,29 @@ namespace PhotoApplication
             }
         }
         
-        public void changePixels()
+        public void doConversion1(double barwa, double nasycenie, double jasnosc)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                int yIndex = y * rawStride;
+                for (int x = 0; x < rawStride; x += 4)
+                {
+                    pixelDataHSV[x + yIndex] *= barwa;
+                    if (pixelDataHSV[x + yIndex] > 360)
+                        pixelDataHSV[x + yIndex] = 360;
+                    pixelDataHSV[x + yIndex + 1] *= nasycenie;
+                    if (pixelDataHSV[x + yIndex + 1] > 1)
+                        pixelDataHSV[x + yIndex + 1] = 1;
+                    pixelDataHSV[x + yIndex + 2] *= jasnosc;
+                    if (pixelDataHSV[x + yIndex + 2] > 255)
+                        pixelDataHSV[x + yIndex + 2] = 255;
+                }
+
+            }
+            convertHSVtoRGB();
+        }
+
+        public void doNegatyw()
         {
             byte k = 255;
 
