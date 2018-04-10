@@ -86,8 +86,9 @@ namespace PhotoApplication
             {
                 myConversion.changePixels();
                 currentPhoto = BitmapSource.Create(orginalPhoto.PixelWidth, orginalPhoto.PixelHeight, orginalPhoto.DpiX, orginalPhoto.DpiY, PixelFormats.Bgr32, null, myConversion.getPixelData(), myConversion.getStride());
+                /* possible ArgumentOutOfRangeException */
             }
-                  image.Source = currentPhoto;
+            image.Source = currentPhoto;
         }
     }
 }

@@ -15,17 +15,17 @@ namespace PhotoApplication
         public int getStride() { return rawStride; }
         public byte[] getPixelData() { return pixelDataRGB; }
 
-        private void setPixelDataRGB() { mySourceBitmap.CopyPixels(pixelDataRGB, rawStride, 0); }
+        private void setPixelDataRGB() { mySourceBitmap.CopyPixels(pixelDataRGB, rawStride, 0); /* possible ArgumentOutOfRangeException */}
 
         public AllConversions(BitmapSource src)
         {
             mySourceBitmap = src;
-            width = (int)src.Width;
-            height = (int)src.Height;
+            width = src.PixelWidth;
+            height = src.PixelHeight;
             rawStride = (width * PixelFormats.Bgr32.BitsPerPixel + 7) / 8;
-            pixelDataRGB = new byte[rawStride * height +4];
+            pixelDataRGB = new byte[rawStride * height + 4]; /// possible OutOfMemoryException 
             setPixelDataRGB();
-            pixelDataHSV = new double[rawStride * height +4];
+            pixelDataHSV = new double[rawStride * height + 4];  /// possible OutOfMemoryException 
             convertRGBtoHSV();
             convertHSVtoRGB();
         }
@@ -37,7 +37,7 @@ namespace PhotoApplication
             for (int y = 0; y < height; y++)
             {
                 int yIndex = y * rawStride;
-                for (int x = 0; x < rawStride; x += 3)
+                for (int x = 0; x < rawStride; x += 4)
                 {
                     r = pixelDataHSV[x + yIndex] / 60;
                     f = r - Math.Floor(r);
@@ -49,34 +49,34 @@ namespace PhotoApplication
                     switch(d)
                     {
                         case 0:
-                            pixelDataRGB[x + yIndex] = (byte)pixelDataHSV[x + yIndex + 2];
+                            pixelDataRGB[x + yIndex + 2] = (byte)pixelDataHSV[x + yIndex + 2];
                             pixelDataRGB[x + yIndex + 1] = (byte)c;
-                            pixelDataRGB[x + yIndex + 2] = (byte)a;
+                            pixelDataRGB[x + yIndex] = (byte)a;
                             break;
                         case 1:
-                            pixelDataRGB[x + yIndex] = (byte)b;
+                            pixelDataRGB[x + yIndex + 2] = (byte)b;
                             pixelDataRGB[x + yIndex + 1] = (byte)pixelDataHSV[x + yIndex + 2];
-                            pixelDataRGB[x + yIndex + 2] = (byte)a;
+                            pixelDataRGB[x + yIndex] = (byte)a;
                             break;
                         case 2:
-                            pixelDataRGB[x + yIndex] = (byte)a;
+                            pixelDataRGB[x + yIndex + 2] = (byte)a;
                             pixelDataRGB[x + yIndex + 1] = (byte)pixelDataHSV[x + yIndex + 2];
-                            pixelDataRGB[x + yIndex + 2] = (byte)c;
+                            pixelDataRGB[x + yIndex] = (byte)c;
                             break;
                         case 3:
-                            pixelDataRGB[x + yIndex] = (byte)a;
+                            pixelDataRGB[x + yIndex + 2] = (byte)a;
                             pixelDataRGB[x + yIndex + 1] = (byte)b;
-                            pixelDataRGB[x + yIndex + 2] = (byte)pixelDataHSV[x + yIndex + 2];
+                            pixelDataRGB[x + yIndex] = (byte)pixelDataHSV[x + yIndex + 2];
                             break;
                         case 4:
-                            pixelDataRGB[x + yIndex] = (byte)c;
+                            pixelDataRGB[x + yIndex + 2] = (byte)c;
                             pixelDataRGB[x + yIndex + 1] = (byte)a;
-                            pixelDataRGB[x + yIndex + 2] = (byte)pixelDataHSV[x + yIndex + 2];
+                            pixelDataRGB[x + yIndex] = (byte)pixelDataHSV[x + yIndex + 2];
                             break;
                         case 5:
-                            pixelDataRGB[x + yIndex] = (byte)pixelDataHSV[x + yIndex + 2];
+                            pixelDataRGB[x + yIndex + 2] = (byte)pixelDataHSV[x + yIndex + 2];
                             pixelDataRGB[x + yIndex + 1] = (byte)a;
-                            pixelDataRGB[x + yIndex + 2] = (byte)b;
+                            pixelDataRGB[x + yIndex] = (byte)b;
                             break;
                         default:
                             break;
@@ -90,10 +90,10 @@ namespace PhotoApplication
             for (int y = 0; y < height; y++)
             {
                 int yIndex = y * rawStride;
-                for (int x = 0; x < rawStride; x += 3)
+                for (int x = 0; x < rawStride; x += 4)
                 {
-                    byte min = Math.Min(pixelDataRGB[x+yIndex], Math.Min(pixelDataRGB[x + yIndex + 1], pixelDataRGB[x + yIndex + 2]));
-                    byte max = Math.Max(pixelDataRGB[x + yIndex], Math.Max(pixelDataRGB[x + yIndex + 1], pixelDataRGB[x + yIndex + 2]));
+                    byte min = Math.Min(pixelDataRGB[x+yIndex + 2], Math.Min(pixelDataRGB[x + yIndex + 1], pixelDataRGB[x + yIndex]));
+                    byte max = Math.Max(pixelDataRGB[x + yIndex + 2], Math.Max(pixelDataRGB[x + yIndex + 1], pixelDataRGB[x + yIndex]));
                     pixelDataHSV[x + yIndex + 2] = max;
 
                     double r = max - min;
@@ -106,21 +106,21 @@ namespace PhotoApplication
                     if (max == pixelDataRGB[x + yIndex + 1])
                     {
                         if (r != 0)
-                            pixelDataHSV[x + yIndex] = (((60 * (pixelDataRGB[x + yIndex + 2] - pixelDataRGB[x + yIndex])) / r) + 120);
+                            pixelDataHSV[x + yIndex] = (((60 * (pixelDataRGB[x + yIndex] - pixelDataRGB[x + yIndex + 2])) / r) + 120);
                         else
                             pixelDataHSV[x + yIndex] = 0;
                     }
-                    else if (max == pixelDataRGB[x + yIndex + 2])
+                    else if (max == pixelDataRGB[x + yIndex])
                     {
                         if (r != 0)
-                            pixelDataHSV[x + yIndex] = (((60 * (pixelDataRGB[x + yIndex] - pixelDataRGB[x + yIndex + 1])) / r) + 240);
+                            pixelDataHSV[x + yIndex] = (((60 * (pixelDataRGB[x + yIndex + 2] - pixelDataRGB[x + yIndex + 1])) / r) + 240);
                         else
                             pixelDataHSV[x + yIndex] = 0;
                     }
                     else
                     {
                         if (r != 0)
-                            pixelDataHSV[x + yIndex] = ((60 * (pixelDataRGB[x + yIndex + 1] - pixelDataRGB[x + yIndex + 2])) / r);
+                            pixelDataHSV[x + yIndex] = ((60 * (pixelDataRGB[x + yIndex + 1] - pixelDataRGB[x + yIndex])) / r);
                         else
                             pixelDataHSV[x + yIndex] = 0;
                     }
@@ -138,11 +138,13 @@ namespace PhotoApplication
             for (int y = 0; y < height; y++)
             {
                 int yIndex = y * rawStride;
-                for (int x = 0; x < rawStride; x += 3)
+                for (int x = 0; x < rawStride; x += 4)
                 {
-                    pixelDataRGB[x + yIndex] = (byte)(k - pixelDataRGB[x + yIndex]);
-                    pixelDataRGB[x + yIndex + 1] = (byte)(k - pixelDataRGB[x + yIndex + 1]);
+                    
                     pixelDataRGB[x + yIndex + 2] = (byte)(k - pixelDataRGB[x + yIndex + 2]);
+                    pixelDataRGB[x + yIndex + 1] = (byte)(k - pixelDataRGB[x + yIndex + 1]);
+                    pixelDataRGB[x + yIndex] = (byte)(k - pixelDataRGB[x + yIndex]);
+                    
                 }
             }
         }
