@@ -10,7 +10,7 @@ namespace PhotoApplication
         protected int width, height, rawStride;
         protected byte[] pixelDataRGB;
         protected double[] pixelDataHSV, pixelDataConversion1RGB;
-        private double[] rozmycieMacierz = { 1, 2, 1, 2, 4, 2, 1, 2, 1 },
+        private int[] rozmycieMacierz = { 1, 2, 1, 2, 4, 2, 1, 2, 1 },
             wyostrzenieMacierz = { 0, -2, 0, -2, 11, -2, 0, -2, 9 },
             krawedzieMacierz = { -1, -1, -1, -1, 8, -1, -1, -1, -1 }; 
 
@@ -199,44 +199,67 @@ namespace PhotoApplication
         }
         public void doConversion3(int choice)
         {
-            setPixelsAtBorder();
+
+            pixelDataConversion1RGB = new double[rawStride * height + 4];
 
             switch (choice)
             {
                 case 1:
+                    useFilter(rozmycieMacierz);
                     break;
                 case 2:
+                    useFilter(wyostrzenieMacierz);
                     break;
                 case 3:
+                    useFilter(krawedzieMacierz);
                     break;
                 default:
                     break;
             }
         }
-        private void setPixelsAtBorder()
+        
+        private void useFilter(int[] filter)
         {
-            pixelDataConversion1RGB = new double[rawStride * height + 4];
-            for (int y = 0; y < height; y++)
+            for (int y = 1; y < height - 1; y++)
+            {
+                int yIndex = y * rawStride, yIndexLower = (y - 1) * rawStride, yIndexUpper = (y + 1) * rawStride;
+                int sumB = 0, sumG = 0, sumR = 0;
+                for (int x = 4; x < rawStride - 4; x += (mySourceBitmap.Format.BitsPerPixel / 8))
+                {
+                    sumB += (pixelDataRGB[x - 4 + yIndexLower] * filter[0]) + (pixelDataRGB[x + yIndexLower] * filter[1]) + (pixelDataRGB[x + 4 + yIndexLower] * filter[2]);
+                    sumB += (pixelDataRGB[x - 4 + yIndex] * filter[3]) + (pixelDataRGB[x + yIndex] * filter[4]) + (pixelDataRGB[x + 4 + yIndex] * filter[5]);
+                    sumB += (pixelDataRGB[x - 4 + yIndexUpper] * filter[6]) + (pixelDataRGB[x + yIndexUpper] * filter[7]) + (pixelDataRGB[x + 4 + yIndexUpper] * filter[8]);
+
+                    sumG += (pixelDataRGB[x - 3 + yIndexLower] * filter[0]) + (pixelDataRGB[x + 1 + yIndexLower] * filter[1]) + (pixelDataRGB[x + 5 + yIndexLower] * filter[2]);
+                    sumG += (pixelDataRGB[x - 3 + yIndex] * filter[3]) + (pixelDataRGB[x + 1 + yIndex] * filter[4]) + (pixelDataRGB[x + 5 + yIndex] * filter[5]);
+                    sumG += (pixelDataRGB[x - 3 + yIndexUpper] * filter[6]) + (pixelDataRGB[x + 1 + yIndexUpper] * filter[7]) + (pixelDataRGB[x + 5 + yIndexUpper] * filter[8]);
+
+                    sumR += (pixelDataRGB[x - 2 + yIndexLower] * filter[0]) + (pixelDataRGB[x + 2 + yIndexLower] * filter[1]) + (pixelDataRGB[x + 6 + yIndexLower] * filter[2]);
+                    sumR += (pixelDataRGB[x - 2 + yIndex] * filter[3]) + (pixelDataRGB[x + 2 + yIndex] * filter[4]) + (pixelDataRGB[x + 6 + yIndex] * filter[5]);
+                    sumR += (pixelDataRGB[x - 2 + yIndexUpper] * filter[6]) + (pixelDataRGB[x + 2 + yIndexUpper] * filter[7]) + (pixelDataRGB[x + 6 + yIndexUpper] * filter[8]);
+
+                    double srednia = (double)sumB/9;
+                    pixelDataConversion1RGB[x + yIndex] = srednia;
+                    srednia = (double)sumG / 9;
+                    pixelDataConversion1RGB[x + 1 + yIndex] = srednia;
+                    srednia = (double)sumR / 9;
+                    pixelDataConversion1RGB[x + 2 + yIndex] = srednia;
+                }
+            }
+            restorePixels();
+        }
+        private void restorePixels()
+        {
+            for (int y = 1; y < height - 1; y++)
             {
                 int yIndex = y * rawStride;
-                pixelDataConversion1RGB[yIndex + 2] =  pixelDataRGB[yIndex + 2];
-                pixelDataConversion1RGB[yIndex + 1] = pixelDataRGB[yIndex + 1];
-                pixelDataConversion1RGB[yIndex] = pixelDataRGB[yIndex];
-                pixelDataConversion1RGB[yIndex + rawStride - 2] = pixelDataRGB[yIndex + rawStride - 2];
-                pixelDataConversion1RGB[yIndex + rawStride - 3] = pixelDataRGB[yIndex + rawStride - 3];
-                pixelDataConversion1RGB[yIndex + rawStride - 4] = pixelDataRGB[yIndex + rawStride - 4];
+                for (int x = 4; x < rawStride - 4; x += (mySourceBitmap.Format.BitsPerPixel / 8))
+                {
+                    pixelDataRGB[x + yIndex] = (byte)(pixelDataConversion1RGB[x + yIndex]);
+                    pixelDataRGB[x + yIndex + 1] = (byte)(pixelDataConversion1RGB[x + yIndex + 1]);
+                    pixelDataRGB[x + yIndex + 2] = (byte)(pixelDataConversion1RGB[x + yIndex + 2]);
+                }
             }
-            for (int x = 0; x < rawStride; x += (mySourceBitmap.Format.BitsPerPixel / 8))
-            {
-                int yIndex = (height - 1) * rawStride;
-                pixelDataConversion1RGB[x + 2] = pixelDataRGB[x + 2];
-                pixelDataConversion1RGB[x + 1] = pixelDataRGB[x + 1];
-                pixelDataConversion1RGB[x] = pixelDataRGB[x];
-                pixelDataConversion1RGB[yIndex + x + 2] = pixelDataRGB[yIndex + x + 2];
-                pixelDataConversion1RGB[yIndex + x + 1] = pixelDataRGB[yIndex + x + 1];
-                pixelDataConversion1RGB[yIndex + x] = pixelDataRGB[yIndex + x];
-            }
-
         }
         public void doNegatyw()
         {

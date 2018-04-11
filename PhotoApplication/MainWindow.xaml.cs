@@ -108,6 +108,31 @@ namespace PhotoApplication
             currentPhoto = orginalPhoto;
         }
 
+        private void conversion3Button_Click(object sender, RoutedEventArgs e)
+        {
+            Button btn = (Button)sender;
+            if (myConversion != null)
+            {
+                switch (btn.Name)
+                {
+                    case "rozmyjButton":
+                        myConversion.doConversion3(1);
+                        break;
+                    case "wyostrzButton":
+                        myConversion.doConversion3(2);
+                        break;
+                    case "krawedzieButton":
+                        myConversion.doConversion3(3);
+                        break;
+                    default:
+                        break;
+                }
+                currentPhoto = BitmapSource.Create(orginalPhoto.PixelWidth, orginalPhoto.PixelHeight, orginalPhoto.DpiX, orginalPhoto.DpiY, PixelFormats.Bgr32, null, myConversion.getPixelData(), myConversion.getStride());
+                /* possible ArgumentOutOfRangeException */
+                image.Source = currentPhoto;
+            }
+               
+        }
         private void negatywButton_Click(object sender, RoutedEventArgs e)
         {
             if (myConversion != null)
@@ -118,6 +143,8 @@ namespace PhotoApplication
                 image.Source = currentPhoto;
             }
         }
+
+        
 
         private void progButton_Click(object sender, RoutedEventArgs e)
         {
@@ -130,5 +157,9 @@ namespace PhotoApplication
             }
         }
 
+        private void histogramButton_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Soon!");
+        }
     }
 }
