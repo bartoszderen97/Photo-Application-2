@@ -28,9 +28,9 @@
             <GroupBox x:Name="groupBox1" Header="Korekcja 2" BorderBrush="Black">
                 <StackPanel Height="105" Width="160">
                     <TextBlock Margin="10,10,0,0" Text="Kontrast"/>
-                    <Slider x:Name="kontrastSlider" HorizontalAlignment="Left" Margin="0,5,0,0" VerticalAlignment="Top" Width="152" RenderTransformOrigin="0.477,-1.098" Value="5" SmallChange="1" LargeChange="3" TickPlacement="BottomRight" IsSnapToTickEnabled="True"/>
+                    <Slider x:Name="kontrastSlider" HorizontalAlignment="Left" Margin="0,5,0,0" VerticalAlignment="Top" Width="152" RenderTransformOrigin="0.477,-1.098" Value="1" SmallChange="0.125" LargeChange="0.5" TickPlacement="BottomRight" IsSnapToTickEnabled="True" Maximum="2" TickFrequency="0.125"/>
 
-                    <Button x:Name="zastosuj2button" Content="Zastosuj" Width="60" Margin="-80,20,0,0" Height="20" Padding="1"/>
+                    <Button x:Name="zastosuj2button" Content="Zastosuj" Width="60" Margin="-80,20,0,0" Height="20" Padding="1" Click="zastosuj2button_Click"/>
                     <Button x:Name="zresetuj2button" Content="Zresetuj" Width="60" Margin="80,-20,0,0" Height="20" Click="zresetuj2button_Click"/>
 
                 </StackPanel>
@@ -46,8 +46,8 @@
                 <StackPanel Width="160">
                     <Button x:Name="negatywButton" Content="Negatyw" Width="60" Margin="-80,20,0,0" Height="20" Padding="1" Click="negatywButton_Click"/>
                     <TextBlock Margin="10,10,0,0" Text="Poziom progu"/>
-                    <Slider x:Name="progSlider" HorizontalAlignment="Left" Margin="0,10,0,0" VerticalAlignment="Top" Width="152" RenderTransformOrigin="0.477,-1.098" Value="5" SmallChange="1" LargeChange="3" TickPlacement="BottomRight" IsSnapToTickEnabled="True"/>
-                    <Button x:Name="progButton" Content="Próg" Width="60" Margin="-80,20,0,0" Height="20" Padding="1"/>
+                    <Slider x:Name="progSlider" HorizontalAlignment="Left" Margin="0,10,0,0" VerticalAlignment="Top" Width="152" RenderTransformOrigin="0.477,-1.098" Value="50" SmallChange="5" LargeChange="10" TickPlacement="BottomRight" IsSnapToTickEnabled="True" Maximum="90" TickFrequency="5" Minimum="10"/>
+                    <Button x:Name="progButton" Content="Próg" Width="60" Margin="-80,20,0,0" Height="20" Padding="1" Click="progButton_Click"/>
                     <Button x:Name="histogramButton" Content="Histogram" Width="60" Margin="80,-20,0,0" Height="20"/>
                 </StackPanel>
             </GroupBox>

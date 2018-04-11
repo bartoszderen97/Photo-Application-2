@@ -46,6 +46,11 @@ namespace PhotoApplication
                 currentPhoto = orginalPhoto;
                 image.Source = orginalPhoto;
                 myConversion = new AllConversions(orginalPhoto);
+                barwaSlider.Value = 1;
+                jasnoscSlider.Value = 1;
+                nasycenieSlider.Value = 1;
+                kontrastSlider.Value = 1;
+                progSlider.Value = 50;
             }
             saveButton.IsEnabled = true;
         }
@@ -73,20 +78,33 @@ namespace PhotoApplication
                 myConversion.doConversion1(barwaSlider.Value, nasycenieSlider.Value, jasnoscSlider.Value);
                 currentPhoto = BitmapSource.Create(orginalPhoto.PixelWidth, orginalPhoto.PixelHeight, orginalPhoto.DpiX, orginalPhoto.DpiY, PixelFormats.Bgr32, null, myConversion.getPixelData(), myConversion.getStride());
                 /* possible ArgumentOutOfRangeException */
-            }
             image.Source = currentPhoto;
+            }
         }
         private void zresetuj1button_Click(object sender, RoutedEventArgs e)
         {
             image.Source = orginalPhoto;
             myConversion = new AllConversions(orginalPhoto);
+            barwaSlider.Value = 1;
+            jasnoscSlider.Value = 1;
+            nasycenieSlider.Value = 1;
             currentPhoto = orginalPhoto;
         }
-
+        private void zastosuj2button_Click(object sender, RoutedEventArgs e)
+        {
+            if (myConversion != null)
+            {
+                myConversion.doConversion2(kontrastSlider.Value);
+                currentPhoto = BitmapSource.Create(orginalPhoto.PixelWidth, orginalPhoto.PixelHeight, orginalPhoto.DpiX, orginalPhoto.DpiY, PixelFormats.Bgr32, null, myConversion.getPixelData(), myConversion.getStride());
+                /* possible ArgumentOutOfRangeException */
+                image.Source = currentPhoto;
+            }
+        }
         private void zresetuj2button_Click(object sender, RoutedEventArgs e)
         {
             image.Source = orginalPhoto;
             myConversion = new AllConversions(orginalPhoto);
+            kontrastSlider.Value = 1;
             currentPhoto = orginalPhoto;
         }
 
@@ -97,8 +115,20 @@ namespace PhotoApplication
                 myConversion.doNegatyw();
                 currentPhoto = BitmapSource.Create(orginalPhoto.PixelWidth, orginalPhoto.PixelHeight, orginalPhoto.DpiX, orginalPhoto.DpiY, PixelFormats.Bgr32, null, myConversion.getPixelData(), myConversion.getStride());
                 /* possible ArgumentOutOfRangeException */
+                image.Source = currentPhoto;
             }
-            image.Source = currentPhoto;
         }
+
+        private void progButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (myConversion != null)
+            {
+                myConversion.doProgowanie(progSlider.Value);
+                currentPhoto = BitmapSource.Create(orginalPhoto.PixelWidth, orginalPhoto.PixelHeight, orginalPhoto.DpiX, orginalPhoto.DpiY, PixelFormats.Bgr32, null, myConversion.getPixelData(), myConversion.getStride());
+                /* possible ArgumentOutOfRangeException */
+                image.Source = currentPhoto;
+            }
+        }
+
     }
 }
