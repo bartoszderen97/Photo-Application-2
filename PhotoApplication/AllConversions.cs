@@ -11,7 +11,7 @@ namespace PhotoApplication
         protected byte[] pixelDataRGB;
         protected double[] pixelDataHSV, pixelDataConversion1RGB;
         private int[] rozmycieMacierz = { 1, 2, 1, 2, 4, 2, 1, 2, 1 },
-            wyostrzenieMacierz = { 0, -2, 0, -2, 11, -2, 0, -2, 9 },
+            wyostrzenieMacierz = { 0, -2, 0, -2, 11, -2, 0, -2, 0 },
             krawedzieMacierz = { -1, -1, -1, -1, 8, -1, -1, -1, -1 }; 
 
         public BitmapSource getConvertedImage() { return mySourceBitmap; }
@@ -34,8 +34,7 @@ namespace PhotoApplication
         protected void convertHSVtoRGB()
         {
             double r, f, a, b, c;
-            pixelDataHSV = new double[rawStride * height + 4];  /// possible OutOfMemoryException 
-
+            
             for (int y = 0; y < height; y++)
             {
                 int yIndex = y * rawStride;
@@ -89,6 +88,8 @@ namespace PhotoApplication
 
         protected void convertRGBtoHSV()
         {
+            pixelDataHSV = new double[rawStride * height + 4];  /// possible OutOfMemoryException 
+
             for (int y = 0; y < height; y++)
             {
                 int yIndex = y * rawStride;
@@ -220,12 +221,18 @@ namespace PhotoApplication
         
         private void useFilter(int[] filter)
         {
+            double arraySum = 0;
+            for (int i = 0; i < filter.Length; i++)
+                arraySum += filter[i];
+            if (arraySum == 0)
+                arraySum = 1;
             for (int y = 1; y < height - 1; y++)
             {
                 int yIndex = y * rawStride, yIndexLower = (y - 1) * rawStride, yIndexUpper = (y + 1) * rawStride;
-                int sumB = 0, sumG = 0, sumR = 0;
+                
                 for (int x = 4; x < rawStride - 4; x += (mySourceBitmap.Format.BitsPerPixel / 8))
                 {
+                    int sumB = 0, sumG = 0, sumR = 0;
                     sumB += (pixelDataRGB[x - 4 + yIndexLower] * filter[0]) + (pixelDataRGB[x + yIndexLower] * filter[1]) + (pixelDataRGB[x + 4 + yIndexLower] * filter[2]);
                     sumB += (pixelDataRGB[x - 4 + yIndex] * filter[3]) + (pixelDataRGB[x + yIndex] * filter[4]) + (pixelDataRGB[x + 4 + yIndex] * filter[5]);
                     sumB += (pixelDataRGB[x - 4 + yIndexUpper] * filter[6]) + (pixelDataRGB[x + yIndexUpper] * filter[7]) + (pixelDataRGB[x + 4 + yIndexUpper] * filter[8]);
@@ -238,12 +245,33 @@ namespace PhotoApplication
                     sumR += (pixelDataRGB[x - 2 + yIndex] * filter[3]) + (pixelDataRGB[x + 2 + yIndex] * filter[4]) + (pixelDataRGB[x + 6 + yIndex] * filter[5]);
                     sumR += (pixelDataRGB[x - 2 + yIndexUpper] * filter[6]) + (pixelDataRGB[x + 2 + yIndexUpper] * filter[7]) + (pixelDataRGB[x + 6 + yIndexUpper] * filter[8]);
 
-                    double srednia = (double)sumB/9;
-                    pixelDataConversion1RGB[x + yIndex] = srednia;
-                    srednia = (double)sumG / 9;
-                    pixelDataConversion1RGB[x + 1 + yIndex] = srednia;
-                    srednia = (double)sumR / 9;
-                    pixelDataConversion1RGB[x + 2 + yIndex] = srednia;
+                    double srednia = sumB/arraySum;
+
+                    if (srednia < 0)
+                        pixelDataConversion1RGB[x + yIndex] = 0;
+                    else if (srednia > 255)
+                        pixelDataConversion1RGB[x + yIndex] = 255;
+                    else
+                        pixelDataConversion1RGB[x + yIndex] = srednia;
+
+                    srednia = sumG / arraySum;
+
+                    if (srednia < 0)
+                        pixelDataConversion1RGB[x + 1 + yIndex] = 0;
+                    else if (srednia > 255)
+                        pixelDataConversion1RGB[x + 1 + yIndex] = 255;
+                    else
+                        pixelDataConversion1RGB[x + 1 + yIndex] = srednia;
+                    
+                    srednia = sumR / arraySum;
+
+                    if (srednia < 0)
+                        pixelDataConversion1RGB[x + 2 + yIndex] = 0;
+                    else if (srednia > 255)
+                        pixelDataConversion1RGB[x + 2 + yIndex] = 255;
+                    else
+                        pixelDataConversion1RGB[x + 2 + yIndex] = srednia;
+
                 }
             }
             restorePixels();

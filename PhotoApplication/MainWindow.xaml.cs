@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -156,6 +157,26 @@ namespace PhotoApplication
                 image.Source = currentPhoto;
             }
         }
+
+        private void myWindow_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            Window wnd = (Window)sender;
+            imageGrid.Width = wnd.Width - myWrapPanel.Width - 20;
+            image.Width = wnd.Width - myWrapPanel.Width - 40;
+            if(wnd.WindowState== WindowState.Maximized)
+            {
+                imageGrid.Width = e.NewSize.Width - myWrapPanel.Width - 20;
+                image.Width = e.NewSize.Width - myWrapPanel.Width - 40;
+            }
+        }
+        /*
+        protected override void OnStateChanged(EventArgs e)
+        {
+            base.OnStateChanged(e);
+            //Thread.Sleep(1000);
+            myWindow_SizeChanged(myWindow, e);
+        }
+        */
 
         private void histogramButton_Click(object sender, RoutedEventArgs e)
         {
