@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
@@ -9,29 +11,48 @@ namespace PhotoApplication
         protected BitmapSource mySourceBitmap;
         protected int width, height, rawStride;
         protected byte[] pixelDataRGB;
-        protected double[] pixelDataHSV, pixelDataConversion1RGB;
-        private int[] rozmycieMacierz = { 1, 2, 1, 2, 4, 2, 1, 2, 1 },
-            wyostrzenieMacierz = { 0, -2, 0, -2, 11, -2, 0, -2, 0 },
-            krawedzieMacierz = { -1, -1, -1, -1, 8, -1, -1, -1, -1 }; 
+        protected double[] pixelDataHSV, pixelDataConversion3RGB;
+        private int[] blurArray = { 1, 2, 1, 2, 4, 2, 1, 2, 1 },
+            sharpenArray = { 0, -2, 0, -2, 11, -2, 0, -2, 0 },
+            edgeArray = { -1, -1, -1, -1, 8, -1, -1, -1, -1 }; 
 
         public BitmapSource getConvertedImage() { return mySourceBitmap; }
         public int getStride() { return rawStride; }
-        public byte[] getPixelData() { return pixelDataRGB; }
+        public byte[] getPixelDataRGB()
+        {
+            if (pixelDataRGB != null)
+                return pixelDataRGB;
+            else return null;
+        }
+        public double[] getPixelDataHSV()
+        {
+            if (pixelDataHSV != null)
+                return pixelDataHSV;
+            else return null;
+        }
 
-        private void setPixelDataRGB() { mySourceBitmap.CopyPixels(pixelDataRGB, rawStride, 0); /* possible ArgumentOutOfRangeException */}
+        public void setPixelDataRGB() { mySourceBitmap.CopyPixels(pixelDataRGB, rawStride, 0); /* possible ArgumentOutOfRangeException */}
 
         public AllConversions(BitmapSource src)
         {
             mySourceBitmap = src;
             width = src.PixelWidth;
             height = src.PixelHeight;
-            rawStride = (width * src.Format.BitsPerPixel + 7) / 8;
-            pixelDataRGB = new byte[rawStride * height + 4]; /// possible OutOfMemoryException 
-            setPixelDataRGB();
+            try
+            {
+                rawStride = (width * src.Format.BitsPerPixel + 7) / 8;
+                pixelDataRGB = new byte[rawStride * height + 4]; /// possible OutOfMemoryException 
+                setPixelDataRGB();
+            }
+            catch(Exception e)
+            {
+                Debug.Print(e.Message);
+                MessageBox.Show("error");
+            }
             
         }
 
-        protected void convertHSVtoRGB()
+        public void convertHSVtoRGB()
         {
             double r, f, a, b, c;
             
@@ -86,7 +107,7 @@ namespace PhotoApplication
             }
         }
 
-        protected void convertRGBtoHSV()
+        public void convertRGBtoHSV()
         {
             pixelDataHSV = new double[rawStride * height + 4];  /// possible OutOfMemoryException 
 
@@ -134,7 +155,7 @@ namespace PhotoApplication
             }
         }
         
-        public void doConversion1(double barwa, double nasycenie, double jasnosc)
+        public void doConversion1(double hue, double saturation, double brightness)
         {
             convertRGBtoHSV();
 
@@ -143,13 +164,13 @@ namespace PhotoApplication
                 int yIndex = y * rawStride;
                 for (int x = 0; x < rawStride; x += (mySourceBitmap.Format.BitsPerPixel / 8))
                 {
-                    pixelDataHSV[x + yIndex] *= barwa;
+                    pixelDataHSV[x + yIndex] *= hue;
                     if (pixelDataHSV[x + yIndex] > 360)
                         pixelDataHSV[x + yIndex] = 360;
-                    pixelDataHSV[x + yIndex + 1] *= nasycenie;
+                    pixelDataHSV[x + yIndex + 1] *= saturation;
                     if (pixelDataHSV[x + yIndex + 1] > 1)
                         pixelDataHSV[x + yIndex + 1] = 1;
-                    pixelDataHSV[x + yIndex + 2] *= jasnosc;
+                    pixelDataHSV[x + yIndex + 2] *= brightness;
                     if (pixelDataHSV[x + yIndex + 2] > 255)
                         pixelDataHSV[x + yIndex + 2] = 255;
                 }
@@ -157,7 +178,7 @@ namespace PhotoApplication
             }
             convertHSVtoRGB();
         }
-        public void doConversion2(double value)
+        public void doConversion2(double param)
         {
             for (int y = 0; y < height; y++)
             {
@@ -167,9 +188,9 @@ namespace PhotoApplication
                     double B = pixelDataRGB[x + yIndex] - 128;
                     double G = pixelDataRGB[x + yIndex + 1] - 128;
                     double R = pixelDataRGB[x + yIndex + 2] - 128;
-                    B *= value;
-                    G *= value;
-                    R *= value;
+                    B *= param;
+                    G *= param;
+                    R *= param;
 
                     if (R + 128 > 255)
                         R = 255;
@@ -200,19 +221,18 @@ namespace PhotoApplication
         }
         public void doConversion3(int choice)
         {
-
-            pixelDataConversion1RGB = new double[rawStride * height + 4];
+            pixelDataConversion3RGB = new double[rawStride * height + 4];
 
             switch (choice)
             {
                 case 1:
-                    useFilter(rozmycieMacierz);
+                    useFilter(blurArray);
                     break;
                 case 2:
-                    useFilter(wyostrzenieMacierz);
+                    useFilter(sharpenArray);
                     break;
                 case 3:
-                    useFilter(krawedzieMacierz);
+                    useFilter(edgeArray);
                     break;
                 default:
                     break;
@@ -248,29 +268,29 @@ namespace PhotoApplication
                     double srednia = sumB/arraySum;
 
                     if (srednia < 0)
-                        pixelDataConversion1RGB[x + yIndex] = 0;
+                        pixelDataConversion3RGB[x + yIndex] = 0;
                     else if (srednia > 255)
-                        pixelDataConversion1RGB[x + yIndex] = 255;
+                        pixelDataConversion3RGB[x + yIndex] = 255;
                     else
-                        pixelDataConversion1RGB[x + yIndex] = srednia;
+                        pixelDataConversion3RGB[x + yIndex] = srednia;
 
                     srednia = sumG / arraySum;
 
                     if (srednia < 0)
-                        pixelDataConversion1RGB[x + 1 + yIndex] = 0;
+                        pixelDataConversion3RGB[x + 1 + yIndex] = 0;
                     else if (srednia > 255)
-                        pixelDataConversion1RGB[x + 1 + yIndex] = 255;
+                        pixelDataConversion3RGB[x + 1 + yIndex] = 255;
                     else
-                        pixelDataConversion1RGB[x + 1 + yIndex] = srednia;
+                        pixelDataConversion3RGB[x + 1 + yIndex] = srednia;
                     
                     srednia = sumR / arraySum;
 
                     if (srednia < 0)
-                        pixelDataConversion1RGB[x + 2 + yIndex] = 0;
+                        pixelDataConversion3RGB[x + 2 + yIndex] = 0;
                     else if (srednia > 255)
-                        pixelDataConversion1RGB[x + 2 + yIndex] = 255;
+                        pixelDataConversion3RGB[x + 2 + yIndex] = 255;
                     else
-                        pixelDataConversion1RGB[x + 2 + yIndex] = srednia;
+                        pixelDataConversion3RGB[x + 2 + yIndex] = srednia;
 
                 }
             }
@@ -283,13 +303,13 @@ namespace PhotoApplication
                 int yIndex = y * rawStride;
                 for (int x = 4; x < rawStride - 4; x += (mySourceBitmap.Format.BitsPerPixel / 8))
                 {
-                    pixelDataRGB[x + yIndex] = (byte)(pixelDataConversion1RGB[x + yIndex]);
-                    pixelDataRGB[x + yIndex + 1] = (byte)(pixelDataConversion1RGB[x + yIndex + 1]);
-                    pixelDataRGB[x + yIndex + 2] = (byte)(pixelDataConversion1RGB[x + yIndex + 2]);
+                    pixelDataRGB[x + yIndex] = (byte)(pixelDataConversion3RGB[x + yIndex]);
+                    pixelDataRGB[x + yIndex + 1] = (byte)(pixelDataConversion3RGB[x + yIndex + 1]);
+                    pixelDataRGB[x + yIndex + 2] = (byte)(pixelDataConversion3RGB[x + yIndex + 2]);
                 }
             }
         }
-        public void doNegatyw()
+        public void doNegative()
         {
             byte k = 255;
 
@@ -306,9 +326,9 @@ namespace PhotoApplication
                 }
             }
         }
-        public void doProgowanie(double value)
+        public void doThresholding(double param)
         {
-            double jasnosc, prog = 255 * value / 100;
+            double brightness, threshold = 255 * param / 100;
             for (int y = 0; y < height; y++)
             {
                 int yIndex = y * rawStride;
@@ -317,8 +337,8 @@ namespace PhotoApplication
                     double B = pixelDataRGB[x + yIndex] * 0.114;
                     double G = pixelDataRGB[x + yIndex + 1] * 0.587;
                     double R = pixelDataRGB[x + yIndex + 2] * 0.299;
-                    jasnosc = R + B + G;
-                    if (jasnosc < prog)
+                    brightness = R + B + G;
+                    if (brightness < threshold)
                     {
                         pixelDataRGB[x + yIndex + 2] = 0;
                         pixelDataRGB[x + yIndex + 1] = 0;

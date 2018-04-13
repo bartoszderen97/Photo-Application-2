@@ -25,11 +25,55 @@ namespace PhotoApplication
         private string orginalPhotoName;
         private BitmapSource orginalPhoto, currentPhoto;
         private AllConversions myConversion;
+        private MyHistogramWindow histogramWindow;
+        public static bool isHistogramOpen = false;
 
         public MainWindow()
         {
             InitializeComponent();
             saveButton.IsEnabled = false;
+            histogramButton.IsEnabled = false;
+            WindowState = WindowState.Maximized;
+        }
+
+        private void checkIfHistogramOpen()
+        {
+            if (isHistogramOpen)
+            {
+                isHistogramOpen = false;
+                histogramWindow.Close();
+            }
+        }
+        private void checkIfPixelsAreSet()
+        {
+            if (myConversion.getPixelDataRGB() == null)
+                myConversion.setPixelDataRGB();
+        }
+        private void showMessageBox()
+        {
+            MessageBox.Show(this, "Najpierw musisz wybrać zdjęcie!", "Błąd", MessageBoxButton.OK, MessageBoxImage.Warning, MessageBoxResult.None);
+        }
+        private void setNewImage()
+        {
+            currentPhoto = BitmapSource.Create(orginalPhoto.PixelWidth, orginalPhoto.PixelHeight, orginalPhoto.DpiX, orginalPhoto.DpiY, PixelFormats.Bgr32, null, myConversion.getPixelDataRGB(), myConversion.getStride());
+            /* possible ArgumentOutOfRangeException */
+            image.Source = currentPhoto;
+        }
+
+        private void myWindow_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            Window wnd = (Window)sender;
+            imageGrid.Width = wnd.Width - myWrapPanel.Width - 20;
+            image.Width = wnd.Width - myWrapPanel.Width - 40;
+            if(wnd.WindowState== WindowState.Maximized)
+            {
+                imageGrid.Width = e.NewSize.Width - myWrapPanel.Width - 20;
+                image.Width = e.NewSize.Width - myWrapPanel.Width - 40;
+            }
+        }
+        private void myWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            checkIfHistogramOpen();
         }
 
         private void openButton_Click(object sender, RoutedEventArgs e)
@@ -42,18 +86,19 @@ namespace PhotoApplication
             if (openFileDialog.ShowDialog() == true)
             {
                 orginalPhotoName = openFileDialog.FileName;
-                
                 orginalPhoto = new BitmapImage(new Uri(orginalPhotoName));
                 currentPhoto = orginalPhoto;
                 image.Source = orginalPhoto;
                 myConversion = new AllConversions(orginalPhoto);
-                barwaSlider.Value = 1;
-                jasnoscSlider.Value = 1;
-                nasycenieSlider.Value = 1;
-                kontrastSlider.Value = 1;
-                progSlider.Value = 50;
+                hueSlider.Value = 1;
+                brightnessSlider.Value = 1;
+                saturationSlider.Value = 1;
+                contrastSlider.Value = 1;
+                thresholdSlider.Value = 50;
+                saveButton.IsEnabled = true;
+                histogramButton.IsEnabled = true;
+                checkIfHistogramOpen();
             }
-            saveButton.IsEnabled = true;
         }
         private void saveButton_Click(object sender, RoutedEventArgs e)
         {
@@ -71,42 +116,51 @@ namespace PhotoApplication
                     encoder.Save(stream);
                 }
             }
+            checkIfHistogramOpen();
         }
-        private void zastosuj1button_Click(object sender, RoutedEventArgs e)
+
+        private void apply1button_Click(object sender, RoutedEventArgs e)
         {
             if (myConversion != null)
             {
-                myConversion.doConversion1(barwaSlider.Value, nasycenieSlider.Value, jasnoscSlider.Value);
-                currentPhoto = BitmapSource.Create(orginalPhoto.PixelWidth, orginalPhoto.PixelHeight, orginalPhoto.DpiX, orginalPhoto.DpiY, PixelFormats.Bgr32, null, myConversion.getPixelData(), myConversion.getStride());
-                /* possible ArgumentOutOfRangeException */
-            image.Source = currentPhoto;
+                checkIfPixelsAreSet();
+                myConversion.doConversion1(hueSlider.Value, saturationSlider.Value, brightnessSlider.Value);
+                setNewImage();
             }
+            else
+                showMessageBox();
+            checkIfHistogramOpen();
         }
-        private void zresetuj1button_Click(object sender, RoutedEventArgs e)
+        private void reset1button_Click(object sender, RoutedEventArgs e)
         {
             image.Source = orginalPhoto;
             myConversion = new AllConversions(orginalPhoto);
-            barwaSlider.Value = 1;
-            jasnoscSlider.Value = 1;
-            nasycenieSlider.Value = 1;
+            hueSlider.Value = 1;
+            brightnessSlider.Value = 1;
+            saturationSlider.Value = 1;
             currentPhoto = orginalPhoto;
+            checkIfHistogramOpen();
         }
-        private void zastosuj2button_Click(object sender, RoutedEventArgs e)
+
+        private void apply2button_Click(object sender, RoutedEventArgs e)
         {
             if (myConversion != null)
             {
-                myConversion.doConversion2(kontrastSlider.Value);
-                currentPhoto = BitmapSource.Create(orginalPhoto.PixelWidth, orginalPhoto.PixelHeight, orginalPhoto.DpiX, orginalPhoto.DpiY, PixelFormats.Bgr32, null, myConversion.getPixelData(), myConversion.getStride());
-                /* possible ArgumentOutOfRangeException */
-                image.Source = currentPhoto;
+                checkIfPixelsAreSet();
+                myConversion.doConversion2(contrastSlider.Value);
+                setNewImage();
             }
+            else
+                showMessageBox();
+            checkIfHistogramOpen();
         }
-        private void zresetuj2button_Click(object sender, RoutedEventArgs e)
+        private void reset2button_Click(object sender, RoutedEventArgs e)
         {
             image.Source = orginalPhoto;
             myConversion = new AllConversions(orginalPhoto);
-            kontrastSlider.Value = 1;
+            contrastSlider.Value = 1;
             currentPhoto = orginalPhoto;
+            checkIfHistogramOpen();
         }
 
         private void conversion3Button_Click(object sender, RoutedEventArgs e)
@@ -114,73 +168,73 @@ namespace PhotoApplication
             Button btn = (Button)sender;
             if (myConversion != null)
             {
+                checkIfPixelsAreSet();
                 switch (btn.Name)
                 {
-                    case "rozmyjButton":
+                    case "blurButton":
                         myConversion.doConversion3(1);
                         break;
-                    case "wyostrzButton":
+                    case "sharpenButton":
                         myConversion.doConversion3(2);
                         break;
-                    case "krawedzieButton":
+                    case "edgeButton":
                         myConversion.doConversion3(3);
                         break;
                     default:
                         break;
                 }
-                currentPhoto = BitmapSource.Create(orginalPhoto.PixelWidth, orginalPhoto.PixelHeight, orginalPhoto.DpiX, orginalPhoto.DpiY, PixelFormats.Bgr32, null, myConversion.getPixelData(), myConversion.getStride());
-                /* possible ArgumentOutOfRangeException */
-                image.Source = currentPhoto;
+                setNewImage();
             }
-               
+            else
+                showMessageBox();
+            checkIfHistogramOpen();
         }
-        private void negatywButton_Click(object sender, RoutedEventArgs e)
+
+        private void negativeButton_Click(object sender, RoutedEventArgs e)
         {
             if (myConversion != null)
             {
-                myConversion.doNegatyw();
-                currentPhoto = BitmapSource.Create(orginalPhoto.PixelWidth, orginalPhoto.PixelHeight, orginalPhoto.DpiX, orginalPhoto.DpiY, PixelFormats.Bgr32, null, myConversion.getPixelData(), myConversion.getStride());
-                /* possible ArgumentOutOfRangeException */
-                image.Source = currentPhoto;
+                checkIfPixelsAreSet();
+                myConversion.doNegative();
+                setNewImage();
             }
+            else
+                showMessageBox();
+            checkIfHistogramOpen();
         }
-
-        
-
-        private void progButton_Click(object sender, RoutedEventArgs e)
+        private void thresholdButton_Click(object sender, RoutedEventArgs e)
         {
             if (myConversion != null)
             {
-                myConversion.doProgowanie(progSlider.Value);
-                currentPhoto = BitmapSource.Create(orginalPhoto.PixelWidth, orginalPhoto.PixelHeight, orginalPhoto.DpiX, orginalPhoto.DpiY, PixelFormats.Bgr32, null, myConversion.getPixelData(), myConversion.getStride());
-                /* possible ArgumentOutOfRangeException */
-                image.Source = currentPhoto;
+                checkIfPixelsAreSet();
+                myConversion.doThresholding(thresholdSlider.Value);
+                setNewImage();
             }
+            else
+                showMessageBox();
+            checkIfHistogramOpen();
         }
-
-        private void myWindow_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            Window wnd = (Window)sender;
-            imageGrid.Width = wnd.Width - myWrapPanel.Width - 20;
-            image.Width = wnd.Width - myWrapPanel.Width - 40;
-            if(wnd.WindowState== WindowState.Maximized)
-            {
-                imageGrid.Width = e.NewSize.Width - myWrapPanel.Width - 20;
-                image.Width = e.NewSize.Width - myWrapPanel.Width - 40;
-            }
-        }
-        /*
-        protected override void OnStateChanged(EventArgs e)
-        {
-            base.OnStateChanged(e);
-            //Thread.Sleep(1000);
-            myWindow_SizeChanged(myWindow, e);
-        }
-        */
-
         private void histogramButton_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Soon!");
+            if (!isHistogramOpen)
+            {
+                isHistogramOpen = true;
+                histogramWindow = new MyHistogramWindow();
+                if (myConversion != null)
+                {
+                    checkIfPixelsAreSet();
+                    if (myConversion.getPixelDataHSV() == null) 
+                    myConversion.convertRGBtoHSV();
+                }
+                else
+                {
+                    myConversion = new AllConversions(currentPhoto);
+                    myConversion.convertRGBtoHSV();
+                }
+                histogramWindow.setMyPixelData(myConversion.getPixelDataHSV(), currentPhoto);
+                histogramWindow.drawHistogram();
+                histogramWindow.Show();
+            }
         }
     }
 }
