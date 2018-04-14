@@ -1,19 +1,10 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace PhotoApplication
 {
@@ -56,7 +47,6 @@ namespace PhotoApplication
         private void setNewImage()
         {
             currentPhoto = BitmapSource.Create(orginalPhoto.PixelWidth, orginalPhoto.PixelHeight, orginalPhoto.DpiX, orginalPhoto.DpiY, PixelFormats.Bgr32, null, myConversion.getPixelDataRGB(), myConversion.getStride());
-            /* possible ArgumentOutOfRangeException */
             image.Source = currentPhoto;
         }
 
@@ -86,17 +76,27 @@ namespace PhotoApplication
             if (openFileDialog.ShowDialog() == true)
             {
                 orginalPhotoName = openFileDialog.FileName;
-                orginalPhoto = new BitmapImage(new Uri(orginalPhotoName));
-                currentPhoto = orginalPhoto;
-                image.Source = orginalPhoto;
-                myConversion = new AllConversions(orginalPhoto);
-                hueSlider.Value = 1;
-                brightnessSlider.Value = 1;
-                saturationSlider.Value = 1;
-                contrastSlider.Value = 1;
-                thresholdSlider.Value = 50;
-                saveButton.IsEnabled = true;
-                histogramButton.IsEnabled = true;
+                try
+                {
+                    orginalPhoto = new BitmapImage(new Uri(orginalPhotoName));
+                    currentPhoto = orginalPhoto;
+                    image.Source = orginalPhoto;
+                    myConversion = new AllConversions(orginalPhoto);
+                    hueSlider.Value = 1;
+                    brightnessSlider.Value = 1;
+                    saturationSlider.Value = 1;
+                    contrastSlider.Value = 1;
+                    thresholdSlider.Value = 50;
+                    saveButton.IsEnabled = true;
+                    histogramButton.IsEnabled = true;
+                }
+                catch(Exception ex)
+                {
+
+                    Debug.Print(ex.Message);
+                    MessageBox.Show(this, "Wybrane zdjęcie jest uszkodzone! \nWybierz inne", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.None);
+                }
+
                 checkIfHistogramOpen();
             }
         }
@@ -133,12 +133,17 @@ namespace PhotoApplication
         }
         private void reset1button_Click(object sender, RoutedEventArgs e)
         {
-            image.Source = orginalPhoto;
-            myConversion = new AllConversions(orginalPhoto);
-            hueSlider.Value = 1;
-            brightnessSlider.Value = 1;
-            saturationSlider.Value = 1;
-            currentPhoto = orginalPhoto;
+            if (orginalPhoto != null)
+            {
+                image.Source = orginalPhoto;
+                myConversion = new AllConversions(orginalPhoto);
+                hueSlider.Value = 1;
+                brightnessSlider.Value = 1;
+                saturationSlider.Value = 1;
+                currentPhoto = orginalPhoto;
+            }
+            else
+                showMessageBox();
             checkIfHistogramOpen();
         }
 
@@ -156,10 +161,15 @@ namespace PhotoApplication
         }
         private void reset2button_Click(object sender, RoutedEventArgs e)
         {
-            image.Source = orginalPhoto;
-            myConversion = new AllConversions(orginalPhoto);
-            contrastSlider.Value = 1;
-            currentPhoto = orginalPhoto;
+            if (orginalPhoto != null)
+            {
+                image.Source = orginalPhoto;
+                myConversion = new AllConversions(orginalPhoto);
+                contrastSlider.Value = 1;
+                currentPhoto = orginalPhoto;
+            }
+            else
+                showMessageBox();
             checkIfHistogramOpen();
         }
 

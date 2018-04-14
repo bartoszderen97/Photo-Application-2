@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Windows;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace PhotoApplication
@@ -47,9 +46,9 @@ namespace PhotoApplication
             catch(Exception e)
             {
                 Debug.Print(e.Message);
-                MessageBox.Show("error");
+                MessageBox.Show("Wybrane zdjęcie jest zbyt duże! \nWybierz inne", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.None);
             }
-            
+
         }
 
         public void convertHSVtoRGB()
