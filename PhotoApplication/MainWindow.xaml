@@ -5,54 +5,53 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PhotoApplication"
         mc:Ignorable="d"
-        Title="PhotoApplication" Width="1366" Height="768" ResizeMode="CanResizeWithGrip" Icon="photos.ico" MinWidth="1366" MinHeight="768" SizeChanged="myWindow_SizeChanged" Closing="myWindow_Closing">
+        Title="PhotoApplication" ResizeMode="CanResizeWithGrip" Icon="photos.ico" MinWidth="800" MinHeight="450" SizeChanged="myWindow_SizeChanged" Closing="myWindow_Closing">
     <Grid>
-        <Grid x:Name="imageGrid" HorizontalAlignment="Left" VerticalAlignment="Center">
-            <Image x:Name="image" HorizontalAlignment="Center" Margin="10,0,0,9.4" VerticalAlignment="Center" RenderTransformOrigin="-0.921,-1.083" Source="welcomeSheet.jpg" Width="1157" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" />
+        <Grid x:Name="imageGrid" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0">
+            <Image x:Name="image" HorizontalAlignment="Center" Margin="10,0,0,9.4" VerticalAlignment="Center" RenderTransformOrigin="-0.921,-1.083" Source="welcomeSheet.jpg" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Width="450" />
         </Grid>
-        <WrapPanel x:Name="myWrapPanel" HorizontalAlignment="Right" Margin="0,-2,5,2.4" VerticalAlignment="Center" Width="173" Orientation="Vertical" Height="738">
-            <Button x:Name="openButton" Content="Otwórz" Width="75" Margin="-82,10,0,-15" Click="openButton_Click" Height="20"/>
-            <Button x:Name="saveButton" Content="Zapisz" Width="75" Margin="87,-5,0,5" Click="saveButton_Click" Height="20"/>
-            <GroupBox x:Name="groupBox" Header="Korekcja 1" Height="241" Width="172" Margin="0,0,0,30" Padding="0" BorderBrush="Black">
-                <StackPanel Margin="0,0,0,-0.4">
-                    <TextBlock Margin="10,10,0,0" Text="Barwa"/>
-                    <Slider x:Name="hueSlider" HorizontalAlignment="Left" Margin="0,5,0,0" VerticalAlignment="Top" Width="152" RenderTransformOrigin="0.477,-1.098" Value="1" SmallChange="0.125" LargeChange="0.25" TickPlacement="BottomRight" IsSnapToTickEnabled="True" Maximum="2" TickFrequency="0.125"/>
-                    <TextBlock Margin="10,10,0,0" Text="Nasycenie"/>
-                    <Slider x:Name="saturationSlider" HorizontalAlignment="Left" Margin="0,5,0,0" VerticalAlignment="Top" Width="152" RenderTransformOrigin="0.477,-1.098" Value="1" SmallChange="0.125" LargeChange="0.25" TickPlacement="BottomRight" IsSnapToTickEnabled="True" TickFrequency="0.125" Maximum="2"/>
-                    <TextBlock Margin="10,10,0,0" Text="Jasność"/>
-                    <Slider x:Name="brightnessSlider" HorizontalAlignment="Left" Margin="0,5,4,0" VerticalAlignment="Top" Width="152" RenderTransformOrigin="0.477,-1.098" Value="1" SmallChange="0.125" LargeChange="0.25" TickPlacement="BottomRight" IsSnapToTickEnabled="True" Maximum="2" TickFrequency="0.125"/>
-                    <Button x:Name="apply1button" Content="Zastosuj" Width="60" Margin="-80,20,0,0" Height="20" Click="apply1button_Click"/>
-                    <Button x:Name="reset1button" Content="Zresetuj" Width="60" Margin="80,-20,0,0" Height="20" Click="reset1button_Click"/>
-                </StackPanel>
-            </GroupBox>
-            <GroupBox x:Name="groupBox1" Header="Korekcja 2" BorderBrush="Black">
-                <StackPanel Height="105" Width="160">
-                    <TextBlock Margin="10,10,0,0" Text="Kontrast"/>
-                    <Slider x:Name="contrastSlider" HorizontalAlignment="Left" Margin="0,5,0,0" VerticalAlignment="Top" Width="152" RenderTransformOrigin="0.477,-1.098" Value="1" SmallChange="0.125" LargeChange="0.5" TickPlacement="BottomRight" IsSnapToTickEnabled="True" Maximum="2" TickFrequency="0.125"/>
+        <Grid x:Name="wrapGrid" HorizontalAlignment="Right" Panel.ZIndex="1" VerticalAlignment="Center">
+            <WrapPanel x:Name="myWrapPanel" HorizontalAlignment="Right" Margin="0,-2,5,2.4" VerticalAlignment="Center" Orientation="Vertical">
+                <Button x:Name="openButton" Content="Otwórz" Width="75" Margin="-82,10,0,-15" Click="openButton_Click" Height="20"/>
+                <Button x:Name="saveButton" Content="Zapisz" Width="75" Margin="87,-5,0,5" Click="saveButton_Click" Height="20"/>
+                <Button x:Name="zresetujButton" Content="Zresetuj" Width="75" Margin="87,0,0,5" Click="reset1button_Click" Height="20"/>
+                <Button x:Name="zastosujButton" Content="Zastosuj" Width="75" Margin="-82,-30,0,0" Click="apply1button_Click" Height="20"/>
 
-                    <Button x:Name="apply2button" Content="Zastosuj" Width="60" Margin="-80,20,0,0" Height="20" Padding="1" Click="apply2button_Click"/>
-                    <Button x:Name="reset2button" Content="Zresetuj" Width="60" Margin="80,-20,0,0" Height="20" Click="reset2button_Click"/>
+                <GroupBox x:Name="groupBox" Header="Korekcja 1" Margin="0" Padding="0" BorderBrush="Black">
+                    <StackPanel Margin="0,0,0,-0.4">
+                        <TextBlock Margin="10,10,0,0" Text="Barwa"/>
+                        <Slider x:Name="hueSlider" HorizontalAlignment="Left" Margin="0,5,0,0" VerticalAlignment="Top" Width="152" RenderTransformOrigin="0.477,-1.098" SmallChange="18" LargeChange="36" TickPlacement="BottomRight" IsSnapToTickEnabled="True" Maximum="180" TickFrequency="18" Minimum="-180" PreviewMouseLeftButtonUp="mySliders_PreviewMouseLeftButtonUp"/>
+                        <TextBlock Margin="10,10,0,0" Text="Nasycenie"/>
+                        <Slider x:Name="saturationSlider" HorizontalAlignment="Left" Margin="0,5,0,0" VerticalAlignment="Top" Width="152" RenderTransformOrigin="0.477,-1.098" Value="1" SmallChange="0.125" LargeChange="0.25" TickPlacement="BottomRight" IsSnapToTickEnabled="True" TickFrequency="0.125" Maximum="2" PreviewMouseLeftButtonUp="mySliders_PreviewMouseLeftButtonUp"/>
+                        <TextBlock Margin="10,10,0,0" Text="Jasność"/>
+                        <Slider x:Name="brightnessSlider" HorizontalAlignment="Left" Margin="0,5,4,0" VerticalAlignment="Top" Width="152" RenderTransformOrigin="0.477,-1.098" SmallChange="16" LargeChange="32" TickPlacement="BottomRight" IsSnapToTickEnabled="True" Maximum="128" TickFrequency="16" Minimum="-128" PreviewMouseLeftButtonUp="mySliders_PreviewMouseLeftButtonUp"/>
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox x:Name="groupBox1" Header="Korekcja 2" BorderBrush="Black">
+                    <StackPanel Width="160">
+                        <TextBlock Margin="10,10,0,0" Text="Kontrast"/>
+                        <Slider x:Name="contrastSlider" HorizontalAlignment="Left" Margin="0,5,0,0" VerticalAlignment="Top" Width="152" RenderTransformOrigin="0.477,-1.098" Value="1" SmallChange="0.125" LargeChange="0.5" TickPlacement="BottomRight" IsSnapToTickEnabled="True" Maximum="2" TickFrequency="0.125" PreviewMouseLeftButtonUp="mySliders_PreviewMouseLeftButtonUp"/>
 
-                </StackPanel>
-            </GroupBox>
-            <GroupBox x:Name="groupBox2" Header="Korekcja 3" BorderBrush="Black">
-                <StackPanel Width="160">
-                    <Button x:Name="blurButton" Content="Rozmyj" Width="60" Margin="-80,20,0,0" Height="20" Padding="1" Click="conversion3Button_Click"/>
-                    <Button x:Name="sharpenButton" Content="Wyostrz" Width="60" Margin="80,-20,0,0" Height="20" Click="conversion3Button_Click"/>
-                    <Button x:Name="edgeButton" Content="Krawędzie" Width="60" Margin="0,9,0,10" Height="20" Click="conversion3Button_Click"/>
-                </StackPanel>
-            </GroupBox>
-            <GroupBox x:Name="groupBox3" Header="Korekcja 4" Height="174" BorderBrush="Black">
-                <StackPanel Width="160">
-                    <Button x:Name="negativeButton" Content="Negatyw" Width="60" Margin="-80,20,0,0" Height="20" Padding="1" Click="negativeButton_Click"/>
-                    <TextBlock Margin="10,10,0,0" Text="Poziom progu"/>
-                    <Slider x:Name="thresholdSlider" HorizontalAlignment="Left" Margin="0,10,0,0" VerticalAlignment="Top" Width="152" RenderTransformOrigin="0.477,-1.098" Value="50" SmallChange="5" LargeChange="10" TickPlacement="BottomRight" IsSnapToTickEnabled="True" Maximum="90" TickFrequency="5" Minimum="10"/>
-                    <Button x:Name="thresholdButton" Content="Próg" Width="60" Margin="-80,20,0,0" Height="20" Padding="1" Click="thresholdButton_Click"/>
-                    <Button x:Name="histogramButton" Content="Histogram" Width="60" Margin="80,-20,0,0" Height="20" Click="histogramButton_Click"/>
-                </StackPanel>
-            </GroupBox>
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox x:Name="groupBox2" Header="Korekcja 3" BorderBrush="Black">
+                    <StackPanel>
+                        <Button x:Name="blurButton" Content="Rozmyj" Width="60" Margin="-80,20,0,0" Height="20" Padding="1" Click="conversion3Button_Click"/>
+                        <Button x:Name="sharpenButton" Content="Wyostrz" Width="60" Margin="80,-20,0,0" Height="20" Click="conversion3Button_Click"/>
+                        <Button x:Name="edgeButton" Content="Krawędzie" Width="60" Margin="0,9,0,10" Height="20" Click="conversion3Button_Click"/>
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox x:Name="groupBox3" Header="Korekcja 4" BorderBrush="Black">
+                    <StackPanel>
+                        <Button x:Name="negativeButton" Content="Negatyw" Width="60" Margin="-80,20,0,0" Height="20" Padding="1" Click="negativeButton_Click"/>
+                        <TextBlock Margin="10,10,0,0" Text="Poziom progu"/>
+                        <Slider x:Name="thresholdSlider" HorizontalAlignment="Left" Margin="0,10,0,0" VerticalAlignment="Top" Width="152" RenderTransformOrigin="0.477,-1.098" Value="50" SmallChange="5" LargeChange="10" TickPlacement="BottomRight" IsSnapToTickEnabled="True" Maximum="90" TickFrequency="5" Minimum="10"/>
+                        <Button x:Name="thresholdButton" Content="Próg" Width="60" Margin="-80,20,0,0" Height="20" Padding="1" Click="thresholdButton_Click"/>
+                        <Button x:Name="histogramButton" Content="Histogram" Width="60" Margin="80,-20,0,0" Height="20" Click="histogramButton_Click"/>
+                    </StackPanel>
+                </GroupBox>
 
-        </WrapPanel>
-
+            </WrapPanel>
+        </Grid>
     </Grid>
 </Window>

@@ -12,15 +12,15 @@ namespace PhotoApplication
     public partial class MyHistogramWindow : Window
     {
         private BitmapSource mySourceBitmap;
-        private double[] pixelData;
-        private int[] amount;
-        private int maxValue;
+        private byte[] pixelData;
+        private long[] amount;
+        private long maxValue;
         public MyHistogramWindow()
         {
             InitializeComponent();
-            amount = new int[256];
+            amount = new long[256];
         }
-        public void setMyPixelData(double[] pd, BitmapSource src)
+        public void setMyPixelData(byte[] pd, BitmapSource src)
         {
             pixelData = pd;
             mySourceBitmap = src;
@@ -34,8 +34,8 @@ namespace PhotoApplication
                 int yIndex = y * rawStride;
                 for (int x = 0; x < rawStride; x += 4)
                 {
-                    int i = Convert.ToInt32(pixelData[x + yIndex + 2]);
-                    amount[i]++;
+                    int max = Math.Max(pixelData[x + yIndex + 2], Math.Max(pixelData[x + yIndex + 1], pixelData[x + yIndex]));
+                    amount[max]++;
                 }
             }
             lookForMaxValue();
@@ -61,9 +61,10 @@ namespace PhotoApplication
                 line.X2 = 2*i;
                 line.Y1 = 200.0 - (amount[i - 1] * w);
                 line.Y2 = 200.0 - (amount[i] * w);
-                line.StrokeThickness = 1;
+                line.StrokeThickness = 2;
                 histogramImage.Children.Add(line);
-
+                
+                
                 line = new Line();
                 line.Stroke = Brushes.Gray;
                 line.X1 = (2 * i) - 1;
@@ -72,7 +73,7 @@ namespace PhotoApplication
                 line.Y2 = 200;
                 line.StrokeThickness = 1;
                 histogramImage.Children.Add(line);
-
+                
                 line = new Line();
                 line.Stroke = Brushes.Gray;
                 line.X1 = 2 * i;
@@ -81,6 +82,7 @@ namespace PhotoApplication
                 line.Y2 = 200.0 - (amount[i] * w);
                 line.StrokeThickness = 1;
                 histogramImage.Children.Add(line);
+              
 
             }
         }

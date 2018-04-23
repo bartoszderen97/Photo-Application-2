@@ -150,6 +150,7 @@ namespace PhotoApplication
 
                     if (pixelDataHSV[x + yIndex] < 0)
                         pixelDataHSV[x + yIndex] += 360;
+                    if (x == 0) continue;
                 }
             }
         }
@@ -163,15 +164,19 @@ namespace PhotoApplication
                 int yIndex = y * rawStride;
                 for (int x = 0; x < rawStride; x += (mySourceBitmap.Format.BitsPerPixel / 8))
                 {
-                    pixelDataHSV[x + yIndex] *= hue;
+                    pixelDataHSV[x + yIndex] += hue;
                     if (pixelDataHSV[x + yIndex] > 360)
-                        pixelDataHSV[x + yIndex] = 360;
+                        pixelDataHSV[x + yIndex] -= 360;
+                    if (pixelDataHSV[x + yIndex] < 0)
+                        pixelDataHSV[x + yIndex] += 360;
                     pixelDataHSV[x + yIndex + 1] *= saturation;
                     if (pixelDataHSV[x + yIndex + 1] > 1)
                         pixelDataHSV[x + yIndex + 1] = 1;
-                    pixelDataHSV[x + yIndex + 2] *= brightness;
+                    pixelDataHSV[x + yIndex + 2] += brightness;
                     if (pixelDataHSV[x + yIndex + 2] > 255)
                         pixelDataHSV[x + yIndex + 2] = 255;
+                    if (pixelDataHSV[x + yIndex + 2] < 0)
+                        pixelDataHSV[x + yIndex + 2] = 0;
                 }
 
             }

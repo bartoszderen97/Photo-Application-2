@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
@@ -14,7 +15,7 @@ namespace PhotoApplication
     public partial class MainWindow : Window
     {
         private string orginalPhotoName;
-        private BitmapSource orginalPhoto, currentPhoto;
+        private BitmapSource orginalPhoto, currentPhoto, bufferredPhoto;
         private AllConversions myConversion;
         private MyHistogramWindow histogramWindow;
         public static bool isHistogramOpen = false;
@@ -24,6 +25,10 @@ namespace PhotoApplication
             InitializeComponent();
             saveButton.IsEnabled = false;
             histogramButton.IsEnabled = false;
+            hueSlider.IsEnabled = false;
+            saturationSlider.IsEnabled = false;
+            brightnessSlider.IsEnabled = false;
+            contrastSlider.IsEnabled = false;
             WindowState = WindowState.Maximized;
         }
 
@@ -53,12 +58,26 @@ namespace PhotoApplication
         private void myWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             Window wnd = (Window)sender;
-            imageGrid.Width = wnd.Width - myWrapPanel.Width - 20;
-            image.Width = wnd.Width - myWrapPanel.Width - 40;
-            if(wnd.WindowState== WindowState.Maximized)
+            imageGrid.Width = e.NewSize.Width - 200;
+            image.Width = e.NewSize.Width - 200;
+            if (e.NewSize.Height < 629)
             {
-                imageGrid.Width = e.NewSize.Width - myWrapPanel.Width - 20;
-                image.Width = e.NewSize.Width - myWrapPanel.Width - 40;
+                imageGrid.Width = e.NewSize.Width - 380;
+                image.Width = e.NewSize.Width - 380;
+            }
+            if (wnd.WindowState== WindowState.Maximized)
+            {
+                if (SystemParameters.PrimaryScreenHeight > 629)
+                {
+                    imageGrid.Width = e.NewSize.Width - 200;
+                    image.Width = e.NewSize.Width - 200;
+                }
+                else
+                {
+                    imageGrid.Width = e.NewSize.Width - 380;
+                    image.Width = e.NewSize.Width - 380;
+                }
+                
             }
         }
         private void myWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -80,15 +99,20 @@ namespace PhotoApplication
                 {
                     orginalPhoto = new BitmapImage(new Uri(orginalPhotoName));
                     currentPhoto = orginalPhoto;
+                    bufferredPhoto = currentPhoto;
                     image.Source = orginalPhoto;
                     myConversion = new AllConversions(orginalPhoto);
-                    hueSlider.Value = 1;
-                    brightnessSlider.Value = 1;
+                    hueSlider.Value = 0;
+                    brightnessSlider.Value = 0;
                     saturationSlider.Value = 1;
                     contrastSlider.Value = 1;
                     thresholdSlider.Value = 50;
                     saveButton.IsEnabled = true;
                     histogramButton.IsEnabled = true;
+                    hueSlider.IsEnabled = true;
+                    saturationSlider.IsEnabled = true;
+                    brightnessSlider.IsEnabled = true;
+                    contrastSlider.IsEnabled = true;
                 }
                 catch(Exception ex)
                 {
@@ -124,8 +148,12 @@ namespace PhotoApplication
             if (myConversion != null)
             {
                 checkIfPixelsAreSet();
-                myConversion.doConversion1(hueSlider.Value, saturationSlider.Value, brightnessSlider.Value);
-                setNewImage();
+                bufferredPhoto = currentPhoto;
+                myConversion = new AllConversions(bufferredPhoto);
+                hueSlider.Value = 0;
+                brightnessSlider.Value = 0;
+                saturationSlider.Value = 1;
+                contrastSlider.Value = 1;
             }
             else
                 showMessageBox();
@@ -136,35 +164,12 @@ namespace PhotoApplication
             if (orginalPhoto != null)
             {
                 image.Source = orginalPhoto;
-                myConversion = new AllConversions(orginalPhoto);
-                hueSlider.Value = 1;
-                brightnessSlider.Value = 1;
-                saturationSlider.Value = 1;
+                bufferredPhoto = orginalPhoto;
                 currentPhoto = orginalPhoto;
-            }
-            else
-                showMessageBox();
-            checkIfHistogramOpen();
-        }
-
-        private void apply2button_Click(object sender, RoutedEventArgs e)
-        {
-            if (myConversion != null)
-            {
-                checkIfPixelsAreSet();
-                myConversion.doConversion2(contrastSlider.Value);
-                setNewImage();
-            }
-            else
-                showMessageBox();
-            checkIfHistogramOpen();
-        }
-        private void reset2button_Click(object sender, RoutedEventArgs e)
-        {
-            if (orginalPhoto != null)
-            {
-                image.Source = orginalPhoto;
                 myConversion = new AllConversions(orginalPhoto);
+                hueSlider.Value = 0;
+                brightnessSlider.Value = 0;
+                saturationSlider.Value = 1;
                 contrastSlider.Value = 1;
                 currentPhoto = orginalPhoto;
             }
@@ -172,7 +177,19 @@ namespace PhotoApplication
                 showMessageBox();
             checkIfHistogramOpen();
         }
-
+      
+        private void mySliders_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (bufferredPhoto != null)
+            {
+                myConversion = new AllConversions(bufferredPhoto);
+                myConversion.doConversion1(hueSlider.Value, saturationSlider.Value, brightnessSlider.Value);
+                myConversion.doConversion2(contrastSlider.Value);
+                setNewImage();
+            }
+            checkIfHistogramOpen();
+        }
+        
         private void conversion3Button_Click(object sender, RoutedEventArgs e)
         {
             Button btn = (Button)sender;
@@ -212,6 +229,7 @@ namespace PhotoApplication
                 showMessageBox();
             checkIfHistogramOpen();
         }
+
         private void thresholdButton_Click(object sender, RoutedEventArgs e)
         {
             if (myConversion != null)
@@ -230,18 +248,13 @@ namespace PhotoApplication
             {
                 isHistogramOpen = true;
                 histogramWindow = new MyHistogramWindow();
-                if (myConversion != null)
-                {
-                    checkIfPixelsAreSet();
-                    if (myConversion.getPixelDataHSV() == null) 
-                    myConversion.convertRGBtoHSV();
-                }
+
+                if (myConversion != null)                
+                    checkIfPixelsAreSet();                
                 else
-                {
                     myConversion = new AllConversions(currentPhoto);
-                    myConversion.convertRGBtoHSV();
-                }
-                histogramWindow.setMyPixelData(myConversion.getPixelDataHSV(), currentPhoto);
+                    
+                histogramWindow.setMyPixelData(myConversion.getPixelDataRGB(), currentPhoto);
                 histogramWindow.drawHistogram();
                 histogramWindow.Show();
             }
