@@ -19,6 +19,7 @@ namespace PhotoApplication
         private AllConversions myConversion;
         private MyHistogramWindow histogramWindow;
         public static bool isHistogramOpen = false;
+        private Size wndSize;
 
         public MainWindow()
         {
@@ -29,7 +30,11 @@ namespace PhotoApplication
             saturationSlider.IsEnabled = false;
             brightnessSlider.IsEnabled = false;
             contrastSlider.IsEnabled = false;
-            WindowState = WindowState.Maximized;
+
+            wndSize.Height = myWindow.ActualHeight;
+            wndSize.Width = myWindow.ActualWidth;
+            
+           
         }
 
         private void checkIfHistogramOpen()
@@ -54,31 +59,53 @@ namespace PhotoApplication
             currentPhoto = BitmapSource.Create(orginalPhoto.PixelWidth, orginalPhoto.PixelHeight, orginalPhoto.DpiX, orginalPhoto.DpiY, PixelFormats.Bgr32, null, myConversion.getPixelDataRGB(), myConversion.getStride());
             image.Source = currentPhoto;
         }
+        
+        protected override void OnStateChanged(EventArgs e)
+        {
+            if (myWindow.WindowState == WindowState.Maximized)
+            {
+                wndSize.Height = myWindow.ActualHeight;
+                wndSize.Width = myWindow.ActualWidth;
+                changeWindowSize(wndSize);
+            }
+            else if (myWindow.WindowState == WindowState.Normal)
+            {
+                changeWindowSize(wndSize);
+            }
+            base.OnStateChanged(e);
+        }
+        
+        private void changeWindowSize(Size size)
+        {            
+            if (size.Height > 628)
+            {
+                imageGrid.Width = size.Width - 220;
+                imageGrid.Height = size.Height - 50;
+                imageBorder.Width = size.Width - 220;
+                image.Width = size.Width - 240;
+                image.Height = size.Height - 70;
+            }
+            else
+            {
+                imageGrid.Width = size.Width - 400;
+                imageGrid.Height = size.Height - 30;
+                imageBorder.Width = size.Width - 400;
+                image.Width = size.Width - 420;
+                image.Height = size.Height - 50;
+            }
+            
+            imageBorder.Height = image.ActualHeight + 20;
+            imageBorder.Width = image.ActualWidth + 20;
 
+            canvas.Width = image.ActualWidth;
+            canvas.Height = image.ActualHeight;
+        }
         private void myWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            Window wnd = (Window)sender;
-            imageGrid.Width = e.NewSize.Width - 200;
-            image.Width = e.NewSize.Width - 200;
-            if (e.NewSize.Height < 629)
-            {
-                imageGrid.Width = e.NewSize.Width - 380;
-                image.Width = e.NewSize.Width - 380;
-            }
-            if (wnd.WindowState== WindowState.Maximized)
-            {
-                if (SystemParameters.PrimaryScreenHeight > 629)
-                {
-                    imageGrid.Width = e.NewSize.Width - 200;
-                    image.Width = e.NewSize.Width - 200;
-                }
-                else
-                {
-                    imageGrid.Width = e.NewSize.Width - 380;
-                    image.Width = e.NewSize.Width - 380;
-                }
-                
-            }
+            Debug.WriteLine(image.ActualWidth);
+            
+                changeWindowSize(e.NewSize);
+            
         }
         private void myWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -91,7 +118,7 @@ namespace PhotoApplication
             openFileDialog.Multiselect = false;
             openFileDialog.Filter = "(*.jpg;*.png;*.bmp)|*.jpg;*.png;*.bmp";
             openFileDialog.Title = "Otwórz wybrany plik w aplikacji PhotoApplication";
-                
+
             if (openFileDialog.ShowDialog() == true)
             {
                 orginalPhotoName = openFileDialog.FileName;
@@ -114,7 +141,7 @@ namespace PhotoApplication
                     brightnessSlider.IsEnabled = true;
                     contrastSlider.IsEnabled = true;
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
 
                     Debug.Print(ex.Message);
@@ -122,6 +149,7 @@ namespace PhotoApplication
                 }
 
                 checkIfHistogramOpen();
+                
             }
         }
         private void saveButton_Click(object sender, RoutedEventArgs e)
@@ -130,7 +158,7 @@ namespace PhotoApplication
             saveFileDialog1.Filter = "Plik JPG|*.jpg|Plik PNG|*.png|Plik BMP|*.bmp";
             saveFileDialog1.Title = "Zapisz obecny obraz na dysku komputera";
             saveFileDialog1.ShowDialog();
-            
+
             if (saveFileDialog1.FileName != "")
             {
                 var encoder = new PngBitmapEncoder();
@@ -177,7 +205,7 @@ namespace PhotoApplication
                 showMessageBox();
             checkIfHistogramOpen();
         }
-      
+
         private void mySliders_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             if (bufferredPhoto != null)
@@ -189,7 +217,7 @@ namespace PhotoApplication
             }
             checkIfHistogramOpen();
         }
-        
+
         private void conversion3Button_Click(object sender, RoutedEventArgs e)
         {
             Button btn = (Button)sender;
@@ -230,6 +258,11 @@ namespace PhotoApplication
             checkIfHistogramOpen();
         }
 
+        private void image_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            Debug.WriteLine("tralalala");
+        }
+
         private void thresholdButton_Click(object sender, RoutedEventArgs e)
         {
             if (myConversion != null)
@@ -249,11 +282,11 @@ namespace PhotoApplication
                 isHistogramOpen = true;
                 histogramWindow = new MyHistogramWindow();
 
-                if (myConversion != null)                
-                    checkIfPixelsAreSet();                
+                if (myConversion != null)
+                    checkIfPixelsAreSet();
                 else
                     myConversion = new AllConversions(currentPhoto);
-                    
+
                 histogramWindow.setMyPixelData(myConversion.getPixelDataRGB(), currentPhoto);
                 histogramWindow.drawHistogram();
                 histogramWindow.Show();

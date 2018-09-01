@@ -5,10 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PhotoApplication"
         mc:Ignorable="d"
-        Title="PhotoApplication" ResizeMode="CanResizeWithGrip" Icon="photos.ico" MinWidth="800" MinHeight="450" SizeChanged="myWindow_SizeChanged" Closing="myWindow_Closing">
+        Title="PhotoApplication" Icon="photos.ico" MinWidth="800" MinHeight="450" SizeChanged="myWindow_SizeChanged" Closing="myWindow_Closing" Height="800" Width="800" ResizeMode="CanResizeWithGrip">
     <Grid>
-        <Grid x:Name="imageGrid" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0">
-            <Image x:Name="image" HorizontalAlignment="Center" Margin="10,0,0,9.4" VerticalAlignment="Center" RenderTransformOrigin="-0.921,-1.083" Source="welcomeSheet.jpg" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Width="450" />
+        <Grid x:Name="imageGrid" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Width="600" Height="750">
+            <Border x:Name="imageBorder" Background="#FF960000" Margin="0,0,-20,0" Padding="0" BorderThickness="0" SnapsToDevicePixels="True" ClipToBounds="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Panel.ZIndex="-5" HorizontalAlignment="Center" VerticalAlignment="Center" Width="580" Height="335.2">
+                <Canvas x:Name="canvas" Background="Transparent" Margin="0" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" HorizontalAlignment="Center" VerticalAlignment="Center" Width="560" Height="315.2">
+                    <Image x:Name="image" HorizontalAlignment="Left" Margin="-10,-10,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.921,-1.083" Source="welcomeSheet.jpg" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Panel.ZIndex="-3" PreviewMouseLeftButtonUp="image_PreviewMouseLeftButtonUp" Canvas.Left="10" Canvas.Top="10" Width="560" Height="315.2" />
+
+                </Canvas>
+            </Border>
+            
         </Grid>
         <Grid x:Name="wrapGrid" HorizontalAlignment="Right" Panel.ZIndex="1" VerticalAlignment="Center">
             <WrapPanel x:Name="myWrapPanel" HorizontalAlignment="Right" Margin="0,-2,5,2.4" VerticalAlignment="Center" Orientation="Vertical">
