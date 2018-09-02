@@ -20,7 +20,7 @@ namespace PhotoApplication
         private MyHistogramWindow histogramWindow;
         public static bool isHistogramOpen = false;
         private Size wndSize;
-
+        private bool ifMaximizedWhileOpen, ifMaximized;
         public MainWindow()
         {
             InitializeComponent();
@@ -33,8 +33,6 @@ namespace PhotoApplication
 
             wndSize.Height = myWindow.ActualHeight;
             wndSize.Width = myWindow.ActualWidth;
-            
-           
         }
 
         private void checkIfHistogramOpen()
@@ -62,15 +60,27 @@ namespace PhotoApplication
         
         protected override void OnStateChanged(EventArgs e)
         {
-            if (myWindow.WindowState == WindowState.Maximized)
+            if (WindowState == WindowState.Maximized)
             {
                 wndSize.Height = myWindow.ActualHeight;
                 wndSize.Width = myWindow.ActualWidth;
                 changeWindowSize(wndSize);
             }
-            else if (myWindow.WindowState == WindowState.Normal)
+            else if (WindowState == WindowState.Normal)
             {
+                
                 changeWindowSize(wndSize);
+            }
+            else if (WindowState == WindowState.Minimized)
+            {
+                wndSize.Height = myWindow.ActualHeight;
+                wndSize.Width = myWindow.ActualWidth;
+                if (ifMaximizedWhileOpen)
+                {
+                    ifMaximizedWhileOpen = false;
+                    WindowState = WindowState.Maximized;
+                }
+                
             }
             base.OnStateChanged(e);
         }
@@ -102,10 +112,8 @@ namespace PhotoApplication
         }
         private void myWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            Debug.WriteLine(image.ActualWidth);
-            
-                changeWindowSize(e.NewSize);
-            
+            Debug.WriteLine(WindowState);
+            changeWindowSize(e.NewSize);
         }
         private void myWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -150,6 +158,18 @@ namespace PhotoApplication
 
                 checkIfHistogramOpen();
                 
+                if (WindowState == WindowState.Normal)
+                {
+                    WindowState = WindowState.Maximized;
+                    WindowState = WindowState.Normal;
+                }
+                if (WindowState == WindowState.Maximized)
+                {
+                    ifMaximizedWhileOpen = true;
+                    WindowState = WindowState.Minimized;
+                    ifMaximizedWhileOpen = true;
+                    WindowState = WindowState.Minimized;
+                }
             }
         }
         private void saveButton_Click(object sender, RoutedEventArgs e)
