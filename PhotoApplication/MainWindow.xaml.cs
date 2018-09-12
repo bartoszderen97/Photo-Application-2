@@ -20,7 +20,7 @@ namespace PhotoApplication
         private MyHistogramWindow histogramWindow;
         public static bool isHistogramOpen = false;
         private Size wndSize;
-        private bool ifMaximizedWhileOpen, ifMaximized;
+        private bool ifMaximizedWhileOpen, previousStateMinimized;
         public MainWindow()
         {
             InitializeComponent();
@@ -62,25 +62,33 @@ namespace PhotoApplication
         {
             if (WindowState == WindowState.Maximized)
             {
-                wndSize.Height = myWindow.ActualHeight;
-                wndSize.Width = myWindow.ActualWidth;
-                changeWindowSize(wndSize);
+                if (!previousStateMinimized)
+                {
+                    wndSize.Height = myWindow.ActualHeight;
+                    wndSize.Width = myWindow.ActualWidth;
+                }
+                Size maxSize = wndSize;
+                maxSize.Height = SystemParameters.MaximizedPrimaryScreenHeight;
+                maxSize.Width = SystemParameters.MaximizedPrimaryScreenWidth;
+                changeWindowSize(maxSize);
+                previousStateMinimized = false;
             }
             else if (WindowState == WindowState.Normal)
             {
-                
-                changeWindowSize(wndSize);
+                if (wndSize.Height != 0 && wndSize.Width != 0)
+                    changeWindowSize(wndSize);
+
+                previousStateMinimized = false;
             }
+            
             else if (WindowState == WindowState.Minimized)
-            {
-                wndSize.Height = myWindow.ActualHeight;
-                wndSize.Width = myWindow.ActualWidth;
+            { 
                 if (ifMaximizedWhileOpen)
                 {
-                    ifMaximizedWhileOpen = false;
+                    previousStateMinimized = true;
                     WindowState = WindowState.Maximized;
                 }
-                
+                previousStateMinimized = true;
             }
             base.OnStateChanged(e);
         }
@@ -113,6 +121,11 @@ namespace PhotoApplication
         private void myWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             Debug.WriteLine(WindowState);
+            if (WindowState == WindowState.Normal)
+            {
+                wndSize.Width = e.NewSize.Width;
+                wndSize.Height = e.NewSize.Height;
+            }
             changeWindowSize(e.NewSize);
         }
         private void myWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -160,6 +173,9 @@ namespace PhotoApplication
                 
                 if (WindowState == WindowState.Normal)
                 {
+
+                    wndSize.Width = ActualWidth;
+                    wndSize.Height = ActualHeight;
                     WindowState = WindowState.Maximized;
                     WindowState = WindowState.Normal;
                 }
@@ -167,9 +183,10 @@ namespace PhotoApplication
                 {
                     ifMaximizedWhileOpen = true;
                     WindowState = WindowState.Minimized;
-                    ifMaximizedWhileOpen = true;
                     WindowState = WindowState.Minimized;
+                    ifMaximizedWhileOpen = false;
                 }
+                
             }
         }
         private void saveButton_Click(object sender, RoutedEventArgs e)
