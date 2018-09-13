@@ -1,11 +1,13 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 
 namespace PhotoApplication
 {
@@ -21,6 +23,11 @@ namespace PhotoApplication
         public static bool isHistogramOpen = false;
         private Size wndSize;
         private bool ifMaximizedWhileOpen, previousStateMinimized;
+
+        // variables for extended part
+        private int clickCounter = 0;
+        private Point firstPoint, secondPoint;   // points to draw shapes
+        private List <Rectangle> rects;
         public MainWindow()
         {
             InitializeComponent();
@@ -30,9 +37,7 @@ namespace PhotoApplication
             saturationSlider.IsEnabled = false;
             brightnessSlider.IsEnabled = false;
             contrastSlider.IsEnabled = false;
-
-            wndSize.Height = myWindow.ActualHeight;
-            wndSize.Width = myWindow.ActualWidth;
+            rects = new List<Rectangle>();
         }
 
         private void checkIfHistogramOpen()
@@ -42,6 +47,16 @@ namespace PhotoApplication
                 isHistogramOpen = false;
                 histogramWindow.Close();
             }
+        }
+
+        public void deleteShapes()
+        {
+            for (int i = 0; i < rects.Count; i++)
+            {
+                canvas.Children.Remove(rects[i]);
+            }
+            rects.Clear();
+            clickCounter = 0;
         }
         private void checkIfPixelsAreSet()
         {
@@ -94,8 +109,10 @@ namespace PhotoApplication
         }
         
         private void changeWindowSize(Size size)
-        {            
-            if (size.Height > 628)
+        {
+            if(!previousStateMinimized)
+                deleteShapes();
+            if (size.Height > 753)
             {
                 imageGrid.Width = size.Width - 220;
                 imageGrid.Height = size.Height - 50;
@@ -120,7 +137,7 @@ namespace PhotoApplication
         }
         private void myWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            Debug.WriteLine(WindowState);
+            Debug.WriteLine(ActualHeight);
             if (WindowState == WindowState.Normal)
             {
                 wndSize.Width = e.NewSize.Width;
@@ -161,10 +178,10 @@ namespace PhotoApplication
                     saturationSlider.IsEnabled = true;
                     brightnessSlider.IsEnabled = true;
                     contrastSlider.IsEnabled = true;
+                    deleteShapes();
                 }
                 catch (Exception ex)
                 {
-
                     Debug.Print(ex.Message);
                     MessageBox.Show(this, "Wybrane zdjęcie jest uszkodzone! \nWybierz inne", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.None);
                 }
@@ -173,7 +190,6 @@ namespace PhotoApplication
                 
                 if (WindowState == WindowState.Normal)
                 {
-
                     wndSize.Width = ActualWidth;
                     wndSize.Height = ActualHeight;
                     WindowState = WindowState.Maximized;
@@ -186,7 +202,6 @@ namespace PhotoApplication
                     WindowState = WindowState.Minimized;
                     ifMaximizedWhileOpen = false;
                 }
-                
             }
         }
         private void saveButton_Click(object sender, RoutedEventArgs e)
@@ -219,6 +234,8 @@ namespace PhotoApplication
                 brightnessSlider.Value = 0;
                 saturationSlider.Value = 1;
                 contrastSlider.Value = 1;
+                thresholdSlider.Value = 50;
+                deleteShapes();
             }
             else
                 showMessageBox();
@@ -236,10 +253,13 @@ namespace PhotoApplication
                 brightnessSlider.Value = 0;
                 saturationSlider.Value = 1;
                 contrastSlider.Value = 1;
+                thresholdSlider.Value = 50;
                 currentPhoto = orginalPhoto;
+                deleteShapes();
             }
             else
                 showMessageBox();
+
             checkIfHistogramOpen();
         }
 
@@ -295,9 +315,20 @@ namespace PhotoApplication
             checkIfHistogramOpen();
         }
 
-        private void image_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void canvas_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            Debug.WriteLine("tralalala");
+            if (clickCounter == 0)
+            {
+                clickCounter++;
+                firstPoint = e.GetPosition((Canvas)sender);
+            }
+            else if (clickCounter == 1)
+            {
+                // check which shape
+                secondPoint = e.GetPosition((Canvas)sender);
+                rects.Add(MyCustomShapes.drawMyRectangle(ref canvas, firstPoint, secondPoint, true));
+                clickCounter = 0;
+            }
         }
 
         private void thresholdButton_Click(object sender, RoutedEventArgs e)

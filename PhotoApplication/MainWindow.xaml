@@ -9,8 +9,8 @@
     <Grid>
         <Grid x:Name="imageGrid" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Width="600" Height="750">
             <Border x:Name="imageBorder" Background="#FF960000" Margin="0,0,-20,0" Padding="0" BorderThickness="0" SnapsToDevicePixels="True" ClipToBounds="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Panel.ZIndex="-5" HorizontalAlignment="Center" VerticalAlignment="Center" Width="580" Height="335.2">
-                <Canvas x:Name="canvas" Background="Transparent" Margin="0" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" HorizontalAlignment="Center" VerticalAlignment="Center" Width="560" Height="315.2">
-                    <Image x:Name="image" HorizontalAlignment="Left" Margin="-10,-10,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.921,-1.083" Source="welcomeSheet.jpg" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Panel.ZIndex="-3" PreviewMouseLeftButtonUp="image_PreviewMouseLeftButtonUp" Canvas.Left="10" Canvas.Top="10" Width="560" Height="315.2" />
+                <Canvas x:Name="canvas" Background="Transparent" Margin="0" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" HorizontalAlignment="Center" VerticalAlignment="Center" Width="560" Height="315.2" PreviewMouseLeftButtonUp="canvas_PreviewMouseLeftButtonUp">
+                    <Image x:Name="image" HorizontalAlignment="Left" Margin="-10,-10,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.921,-1.083" Source="welcomeSheet.jpg" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Panel.ZIndex="-3" Canvas.Left="10" Canvas.Top="10" Width="560" Height="315.2" />
 
                 </Canvas>
             </Border>
@@ -56,7 +56,26 @@
                         <Button x:Name="histogramButton" Content="Histogram" Width="60" Margin="80,-20,0,0" Height="20" Click="histogramButton_Click"/>
                     </StackPanel>
                 </GroupBox>
-
+                <GroupBox x:Name="groupBox4" Header="Korekcja selektywna" BorderBrush="Black">
+                    <StackPanel>
+                        <CheckBox x:Name="selectionPowerChbx" Content="On/Off">
+                            
+                        </CheckBox>
+                        <RadioButton x:Name="rectSelectionRb" Content="zaznaczenie prostokątne"/>
+                        <RadioButton x:Name="elipseSelectionRb" Content="zaznaczenie eliptyczne">
+                            
+                        </RadioButton>
+                        <RadioButton x:Name="wandSelectionRb" Content="zaznaczenie &quot;różdżka&quot;">
+                            
+                        </RadioButton>
+                        <Label Content="zaznaczony kolor:">
+                            
+                        </Label>
+                        <Border x:Name="selectedColorLabel" Background="White" BorderBrush="Black" BorderThickness="3">
+                            <Label></Label>
+                        </Border>
+                    </StackPanel>
+                </GroupBox>
             </WrapPanel>
         </Grid>
     </Grid>
