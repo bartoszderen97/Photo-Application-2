@@ -27,7 +27,9 @@ namespace PhotoApplication
         // variables for extended part
         private int clickCounter = 0;
         private Point firstPoint, secondPoint;   // points to draw shapes
-        private List <Rectangle> rects;
+        private List<Rectangle> rects;
+        private List<Ellipse> ellipses;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -37,7 +39,10 @@ namespace PhotoApplication
             saturationSlider.IsEnabled = false;
             brightnessSlider.IsEnabled = false;
             contrastSlider.IsEnabled = false;
+            selectionPowerChbx.IsEnabled = false;
+            changeChbxState(false);
             rects = new List<Rectangle>();
+            ellipses = new List<Ellipse>();
         }
 
         private void checkIfHistogramOpen()
@@ -55,8 +60,15 @@ namespace PhotoApplication
             {
                 canvas.Children.Remove(rects[i]);
             }
+            for (int i = 0; i < ellipses.Count; i++)
+            {
+                canvas.Children.Remove(ellipses[i]);
+            }
             rects.Clear();
+            ellipses.Clear();
             clickCounter = 0;
+            firstPoint = new Point();
+            secondPoint = new Point();
         }
         private void checkIfPixelsAreSet()
         {
@@ -137,13 +149,20 @@ namespace PhotoApplication
         }
         private void myWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            Debug.WriteLine(ActualHeight);
             if (WindowState == WindowState.Normal)
             {
                 wndSize.Width = e.NewSize.Width;
                 wndSize.Height = e.NewSize.Height;
             }
+            if (selectionPowerChbx.IsChecked == true)
+            {
+                selectionPowerChbx.IsChecked = false;
+                changeChbxState(false);
+                deleteShapes();
+            }
             changeWindowSize(e.NewSize);
+            if(orginalPhoto!=null)
+            Debug.WriteLine(canvas.ActualHeight);
         }
         private void myWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -178,7 +197,9 @@ namespace PhotoApplication
                     saturationSlider.IsEnabled = true;
                     brightnessSlider.IsEnabled = true;
                     contrastSlider.IsEnabled = true;
-                    deleteShapes();
+                    selectionPowerChbx.IsEnabled = true;
+                    selectionPowerChbx.IsChecked = false;
+                    changeChbxState(false);
                 }
                 catch (Exception ex)
                 {
@@ -202,6 +223,7 @@ namespace PhotoApplication
                     WindowState = WindowState.Minimized;
                     ifMaximizedWhileOpen = false;
                 }
+                deleteShapes();
             }
         }
         private void saveButton_Click(object sender, RoutedEventArgs e)
@@ -229,13 +251,12 @@ namespace PhotoApplication
             {
                 checkIfPixelsAreSet();
                 bufferredPhoto = currentPhoto;
-                myConversion = new AllConversions(bufferredPhoto);
+                myConversion.setSourceBitmap(bufferredPhoto);
                 hueSlider.Value = 0;
                 brightnessSlider.Value = 0;
                 saturationSlider.Value = 1;
                 contrastSlider.Value = 1;
                 thresholdSlider.Value = 50;
-                deleteShapes();
             }
             else
                 showMessageBox();
@@ -256,6 +277,8 @@ namespace PhotoApplication
                 thresholdSlider.Value = 50;
                 currentPhoto = orginalPhoto;
                 deleteShapes();
+                selectionPowerChbx.IsChecked = false;
+                changeChbxState(false);
             }
             else
                 showMessageBox();
@@ -267,7 +290,7 @@ namespace PhotoApplication
         {
             if (bufferredPhoto != null)
             {
-                myConversion = new AllConversions(bufferredPhoto);
+                myConversion.setSourceBitmap(bufferredPhoto);
                 myConversion.doConversion1(hueSlider.Value, saturationSlider.Value, brightnessSlider.Value);
                 myConversion.doConversion2(contrastSlider.Value);
                 setNewImage();
@@ -302,6 +325,50 @@ namespace PhotoApplication
             checkIfHistogramOpen();
         }
 
+        private void selectionPowerChbx_Click(object sender, RoutedEventArgs e)
+        {
+            if (selectionPowerChbx.IsChecked == true)
+            {
+                changeChbxState(true);
+                deleteShapes();
+                myConversion.truncateSelectedPixels();
+                myConversion.setIfWholeImg(false);
+            }
+            else
+            {
+                changeChbxState(false);
+                deleteShapes();
+                myConversion.truncateSelectedPixels();
+                myConversion.setIfWholeImg(true);
+            }
+        }
+        
+        private void changeChbxState(bool ifEnabled)
+        {
+            rectSelectionRb.IsChecked = false;
+            elipseSelectionRb.IsChecked = false;
+            wandSelectionRb.IsChecked = false;
+            rectSelectionRb.IsEnabled = ifEnabled;
+            elipseSelectionRb.IsEnabled = ifEnabled;
+            wandSelectionRb.IsEnabled = ifEnabled;
+            selectedColorLabel.Background = Brushes.White;
+        }
+
+        private void SelectionRb_Click(object sender, RoutedEventArgs e)
+        {
+            if (rectSelectionRb.IsChecked == true || elipseSelectionRb.IsChecked == true)
+                selectedColorLabel.Background = MyCustomShapes.borderColor;
+            else
+                selectedColorLabel.Background = new SolidColorBrush(Colors.White);
+            clickCounter = 0;
+        }
+
+        private void randomColor_Click(object sender, RoutedEventArgs e)
+        {
+            MyCustomShapes.setRandomColor();
+            selectedColorLabel.Background = MyCustomShapes.borderColor;
+        }
+
         private void negativeButton_Click(object sender, RoutedEventArgs e)
         {
             if (myConversion != null)
@@ -317,18 +384,34 @@ namespace PhotoApplication
 
         private void canvas_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (clickCounter == 0)
+            if (selectionPowerChbx.IsChecked == true && (rectSelectionRb.IsChecked == true || elipseSelectionRb.IsChecked == true)) 
             {
-                clickCounter++;
-                firstPoint = e.GetPosition((Canvas)sender);
+                Debug.WriteLine(e.GetPosition((Canvas)sender));
+                if (clickCounter == 0)
+                {
+                    clickCounter++;
+                    firstPoint = e.GetPosition((Canvas)sender);
+                }
+                else if (clickCounter == 1)
+                {
+                    // check which shape
+                    secondPoint = e.GetPosition((Canvas)sender);
+                    if (rectSelectionRb.IsChecked == true)
+                    {
+                        rects.Add(MyCustomShapes.drawMyRectangle(ref canvas, firstPoint, secondPoint));
+                        myConversion.setSelectedPixels(MyCustomShapes.getSelectedPixelsArrayForRect(firstPoint, secondPoint, myConversion.getStride(), orginalPhoto.PixelHeight, canvas.ActualHeight, canvas.ActualWidth));
+                    }
+                    else if (elipseSelectionRb.IsChecked == true)
+                    {
+                        ellipses.Add(MyCustomShapes.drawMyEllipse(ref canvas, firstPoint, secondPoint));
+                        myConversion.setSelectedPixels(MyCustomShapes.getSelectedPixelsArrayForEllipse(firstPoint, secondPoint, myConversion.getStride(), orginalPhoto.PixelHeight, canvas.ActualHeight, canvas.ActualWidth));
+                        
+                    }
+
+                    clickCounter = 0;
+                }
             }
-            else if (clickCounter == 1)
-            {
-                // check which shape
-                secondPoint = e.GetPosition((Canvas)sender);
-                rects.Add(MyCustomShapes.drawMyRectangle(ref canvas, firstPoint, secondPoint, true));
-                clickCounter = 0;
-            }
+            
         }
 
         private void thresholdButton_Click(object sender, RoutedEventArgs e)

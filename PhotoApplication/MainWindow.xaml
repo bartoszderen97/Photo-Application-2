@@ -58,14 +58,15 @@
                 </GroupBox>
                 <GroupBox x:Name="groupBox4" Header="Korekcja selektywna" BorderBrush="Black">
                     <StackPanel>
-                        <CheckBox x:Name="selectionPowerChbx" Content="On/Off">
-                            
-                        </CheckBox>
-                        <RadioButton x:Name="rectSelectionRb" Content="zaznaczenie prostokątne"/>
-                        <RadioButton x:Name="elipseSelectionRb" Content="zaznaczenie eliptyczne">
+                        <CheckBox x:Name="selectionPowerChbx" Content="On/Off" Click="selectionPowerChbx_Click"/>
+                        <RadioButton x:Name="rectSelectionRb" Content="zaznaczenie prostokątne" Click="SelectionRb_Click"/>
+                        <RadioButton x:Name="elipseSelectionRb" Content="zaznaczenie eliptyczne" Click="SelectionRb_Click">
                             
                         </RadioButton>
-                        <RadioButton x:Name="wandSelectionRb" Content="zaznaczenie &quot;różdżka&quot;">
+                        <Button x:Name="randomColor" Content="wylosuj inny kolor krawędzi" Click="randomColor_Click">
+                            
+                        </Button>
+                        <RadioButton x:Name="wandSelectionRb" Content="zaznaczenie &quot;różdżka&quot;" Click="SelectionRb_Click">
                             
                         </RadioButton>
                         <Label Content="zaznaczony kolor:">
