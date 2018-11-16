@@ -166,7 +166,7 @@ namespace PhotoApplication
 
                     if (pixelDataHSV[x + yIndex] < 0)
                         pixelDataHSV[x + yIndex] += 360;
-                    if (x == 0) continue;
+
                 }
             }
         }

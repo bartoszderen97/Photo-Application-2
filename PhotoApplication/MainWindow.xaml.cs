@@ -161,8 +161,8 @@ namespace PhotoApplication
                 deleteShapes();
             }
             changeWindowSize(e.NewSize);
-            if(orginalPhoto!=null)
-            Debug.WriteLine(canvas.ActualHeight);
+            if(myConversion!=null)
+            myConversion.setIfWholeImg(true);
         }
         private void myWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -369,6 +369,11 @@ namespace PhotoApplication
             selectedColorLabel.Background = MyCustomShapes.borderColor;
         }
 
+        private void rangeSlider_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            MyCustomShapes.range = rangeSlider.Value;
+        }
+
         private void negativeButton_Click(object sender, RoutedEventArgs e)
         {
             if (myConversion != null)
@@ -386,7 +391,6 @@ namespace PhotoApplication
         {
             if (selectionPowerChbx.IsChecked == true && (rectSelectionRb.IsChecked == true || elipseSelectionRb.IsChecked == true)) 
             {
-                Debug.WriteLine(e.GetPosition((Canvas)sender));
                 if (clickCounter == 0)
                 {
                     clickCounter++;
@@ -410,6 +414,27 @@ namespace PhotoApplication
 
                     clickCounter = 0;
                 }
+            }
+            else if (selectionPowerChbx.IsChecked == true && wandSelectionRb.IsChecked == true)
+            {
+                double[] hsvpixels = myConversion.getPixelDataHSV();
+                byte[] rgbpixels = myConversion.getPixelDataRGB();
+                if (hsvpixels == null)
+                {
+                    myConversion.convertRGBtoHSV();
+                    hsvpixels = myConversion.getPixelDataHSV();
+                }
+                MyCustomShapes.range = rangeSlider.Value;
+                myConversion.setSelectedPixels(MyCustomShapes.getSelectedPixelsArrayForWand2(e.GetPosition((Canvas)sender), hsvpixels, rgbpixels, myConversion.getStride(), orginalPhoto.PixelHeight, canvas.ActualHeight, canvas.ActualWidth));
+                selectedColorLabel.Background = MyCustomShapes.borderColor;
+                /*
+                myConversion.setSelectedPixels(MyCustomShapes.getSelectedPixelsArrayForWand(e.GetPosition((Canvas)sender), hsvpixels, myConversion.getStride(), orginalPhoto.PixelHeight, canvas.ActualHeight, canvas.ActualWidth));
+                List<Ellipse> points = MyCustomShapes.getBorderPoints(myConversion.getStride(), orginalPhoto.PixelHeight, canvas.ActualHeight, canvas.ActualWidth);
+                for (int i = 0; i < points.Count; i++)
+                {
+                    canvas.Children.Add(points[i]);
+                }
+                */
             }
             
         }

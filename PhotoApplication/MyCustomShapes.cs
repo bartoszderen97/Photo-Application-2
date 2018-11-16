@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,6 +15,9 @@ namespace PhotoApplication
     class MyCustomShapes
     {
         public static SolidColorBrush borderColor = new SolidColorBrush(Colors.Blue);
+        public static double range = 20;
+
+        public static bool[] selectedPixels, alreadyChecked, borderPixels;
         public static Rectangle drawMyRectangle(ref Canvas canvas, Point first, Point second)
         {
             Rectangle rect;
@@ -36,6 +40,7 @@ namespace PhotoApplication
             canvas.Children.Add(rect);
             return rect;
         }
+
         public static Ellipse drawMyEllipse(ref Canvas canvas, Point first, Point second)
         {
             Ellipse ellipse;
@@ -67,7 +72,7 @@ namespace PhotoApplication
 
         public static bool[] getSelectedPixelsArrayForRect(Point leftTop, Point rightBottom, int stride, int pixelHeight, double actualHeight, double actualWidth)
         {
-            bool[] selectedPixels = new bool[stride * pixelHeight + 4];
+            selectedPixels = new bool[stride * pixelHeight + 4];
 
             if (!(leftTop.X < rightBottom.X && leftTop.Y < rightBottom.Y))
                 exchangePointsHelper(ref leftTop, ref rightBottom);
@@ -100,7 +105,7 @@ namespace PhotoApplication
 
         public static bool[] getSelectedPixelsArrayForEllipse(Point leftTop, Point rightBottom, int stride, int pixelHeight, double actualHeight, double actualWidth)
         {
-            bool[] selectedPixels = new bool[stride * pixelHeight + 4];
+            selectedPixels = new bool[stride * pixelHeight + 4];
 
             if (!(leftTop.X < rightBottom.X && leftTop.Y < rightBottom.Y))
                 exchangePointsHelper(ref leftTop, ref rightBottom);
@@ -164,6 +169,232 @@ namespace PhotoApplication
             if (pattern <= 1) return true;
             else return false;
         }
+        public static bool[] getSelectedPixelsArrayForWand2(Point point, double[] pixelDataHSV, byte[] pixelDataRGB, int stride, int pixelHeight, double actualHeight, double actualWidth)
+        {
+            selectedPixels = new bool[stride * pixelHeight + 4];
+            double pointX, pointY;
+            pointX = (point.X / actualWidth) * stride;
+            pointY = (point.Y / actualHeight) * pixelHeight;
+            double value = pixelDataHSV[(int)pointY * stride + (int)pointX];
 
+            borderColor = new SolidColorBrush(Color.FromRgb(pixelDataRGB[(int)pointY*stride+(int)pointX+2], pixelDataRGB[(int)pointY * stride + (int)pointX + 1], pixelDataRGB[(int)pointY * stride + (int)pointX]));
+
+            double rangeMin, rangeMax;
+            bool ifValueOnBorder = false;
+
+            if (value < range)
+            {
+                rangeMax = value + range;
+                rangeMin = 360 + value - range;
+                ifValueOnBorder = true;
+            }
+            else if (value > 360 - range)
+            {
+                rangeMin = value - range;
+                rangeMax = rangeMin - 360 - range;
+                ifValueOnBorder = true;
+            }
+            else
+            {
+                rangeMin = value - range;
+                rangeMax = value + range;
+            }
+
+            for(int i = 0; i < pixelDataHSV.Length; i += 4)
+            {
+                if (ifValueOnBorder)
+                {
+                    if (pixelDataHSV[i] > rangeMin || pixelDataHSV[i] < rangeMax)
+                    {
+                        selectedPixels[i] = true;
+                    }
+                   
+                }
+                else
+                {
+                    if (pixelDataHSV[i] > rangeMin && pixelDataHSV[i] < rangeMax)
+                    {
+                        selectedPixels[i] = true;
+                    }
+                }
+            }
+            return selectedPixels;
+        }
+        /*
+        public static bool[] getSelectedPixelsArrayForWand(Point point, double[] pixelDataHSV, int stride, int pixelHeight, double actualHeight, double actualWidth)
+        {
+            selectedPixels = new bool[stride * pixelHeight + 4];
+            alreadyChecked = new bool[stride * pixelHeight + 4];
+            borderPixels = new bool[stride * pixelHeight + 4];
+
+            double pointX, pointY;
+            pointX = (point.X / actualWidth) * stride;
+            pointY = (point.Y / actualHeight) * pixelHeight;
+            double value = pixelDataHSV[(int)pointY * stride + (int)pointX];
+            
+
+            double rangeMin, rangeMax, range = 20;
+            bool ifValueOnBorder = false;
+
+            if (value < range)
+            {
+                rangeMax = value + range;
+                rangeMin = 360 + value - range;
+                ifValueOnBorder = true;
+            }
+            else if (value > 360 - range)
+            {
+                rangeMin = value - range;
+                rangeMax = rangeMin - 360 - range;
+                ifValueOnBorder = true;
+            }
+            else
+            {
+                rangeMin = value - range;
+                rangeMax = value + range;
+            }
+
+            floodFillAlg((int)pointX, (int)pointY, rangeMin, rangeMax, ifValueOnBorder, pixelDataHSV, stride, pixelHeight);
+
+            return selectedPixels;
+        }
+        public static List<Ellipse> getBorderPoints(int stride, int pixelHeight, double actualHeight, double actualWidth)
+        {
+            List<Ellipse> myPoints = new List<Ellipse>();
+            for(int i=0; i < borderPixels.Length; i++)
+            {
+                if (borderPixels[i])
+                {
+                    int y = i / stride, x = (i - y);
+                    int dotSize = 3;
+
+                    Ellipse currentDot = new Ellipse();
+                    currentDot.Stroke = new SolidColorBrush(Colors.Green);
+                    currentDot.StrokeThickness = 3;
+                    Canvas.SetZIndex(currentDot, 3);
+                    currentDot.Height = dotSize;
+                    currentDot.Width = dotSize;
+                    currentDot.Fill = new SolidColorBrush(Colors.Green);
+                    currentDot.Margin = new Thickness(x, y, 0, 0); // Sets the position.
+                    myPoints.Add(currentDot);
+                }
+            }
+            return myPoints;
+        }
+        public static void floodFillAlg(int x, int y, double rangeMin, double rangeMax, bool ifValueOnBorder, double[] pixelDataHSV, int stride, int pixelHeight)
+        {
+
+            alreadyChecked[y * stride + x] = true;
+            alreadyChecked[y * stride + x + 4] = true;
+            alreadyChecked[y * stride + x - 4] = true;
+            alreadyChecked[(y - 1) * stride + x - 4] = true;
+            alreadyChecked[(y + 1) * stride + x + 4] = true;
+            alreadyChecked[(y - 1) * stride + x + 4] = true;
+            alreadyChecked[(y + 1) * stride + x - 4] = true;
+            alreadyChecked[(y - 1) * stride + x] = true;
+            alreadyChecked[(y + 1) * stride + x] = true;
+
+
+            if (ifValueOnBorder)
+            {
+                if (pixelDataHSV[y * stride + x] > rangeMin || pixelDataHSV[y * stride + x] < rangeMax)
+                {
+                    selectedPixels[y * stride + x] = true;
+                    selectedPixels[y * stride + x + 4] = true;
+                    selectedPixels[y * stride + x - 4] = true;
+                    selectedPixels[(y - 1) * stride + x - 4] = true;
+                    selectedPixels[(y + 1) * stride + x + 4] = true;
+                    selectedPixels[(y - 1) * stride + x + 4] = true;
+                    selectedPixels[(y + 1) * stride + x - 4] = true;
+                    selectedPixels[(y - 1) * stride + x] = true;
+                    selectedPixels[(y + 1) * stride + x] = true;
+                }
+                else
+                {
+                    borderPixels[y * stride + x] = true;
+                    borderPixels[y * stride + x + 4] = true;
+                    borderPixels[y * stride + x - 4] = true;
+                    borderPixels[(y - 1) * stride + x - 4] = true;
+                    borderPixels[(y + 1) * stride + x + 4] = true;
+                    borderPixels[(y - 1) * stride + x + 4] = true;
+                    borderPixels[(y + 1) * stride + x - 4] = true;
+                    borderPixels[(y - 1) * stride + x] = true;
+                    borderPixels[(y + 1) * stride + x] = true;
+
+                    return;
+                }
+            }
+            else
+            {
+                if (pixelDataHSV[y * stride + x] > rangeMin && pixelDataHSV[y * stride + x] < rangeMax)
+                {
+                    selectedPixels[y * stride + x] = true;
+                    selectedPixels[y * stride + x + 4] = true;
+                    selectedPixels[y * stride + x - 4] = true;
+                    selectedPixels[(y - 1) * stride + x - 4] = true;
+                    selectedPixels[(y + 1) * stride + x + 4] = true;
+                    selectedPixels[(y - 1) * stride + x + 4] = true;
+                    selectedPixels[(y + 1) * stride + x - 4] = true;
+                    selectedPixels[(y - 1) * stride + x] = true;
+                    selectedPixels[(y + 1) * stride + x] = true;
+                }
+                else
+                {
+                    borderPixels[y * stride + x] = true;
+                    borderPixels[y * stride + x + 4] = true;
+                    borderPixels[y * stride + x - 4] = true;
+                    borderPixels[(y - 1) * stride + x - 4] = true;
+                    borderPixels[(y + 1) * stride + x + 4] = true;
+                    borderPixels[(y - 1) * stride + x + 4] = true;
+                    borderPixels[(y + 1) * stride + x - 4] = true;
+                    borderPixels[(y - 1) * stride + x] = true;
+                    borderPixels[(y + 1) * stride + x] = true;
+                    return;
+                }
+            }
+            // left center
+            if (x >= 12 && !(alreadyChecked[y * stride + x - 12])) 
+            {
+                floodFillAlg(x - 12, y, rangeMin, rangeMax, ifValueOnBorder, pixelDataHSV, stride, pixelHeight);
+            }
+            // right center
+            if (x < stride - 12 && !(alreadyChecked[y * stride + x + 12]))
+            {
+                floodFillAlg(x + 12, y, rangeMin, rangeMax, ifValueOnBorder, pixelDataHSV, stride, pixelHeight);
+            }
+            // top center
+            if (y > 2 && !(alreadyChecked[(y - 3) * stride + x]))
+            {
+                floodFillAlg(x, y - 3, rangeMin, rangeMax, ifValueOnBorder, pixelDataHSV, stride, pixelHeight);
+            }
+            // bottom center
+            if (y < pixelHeight - 3 && !(alreadyChecked[(y + 3) * stride + x]))
+            {
+                floodFillAlg(x, y + 3, rangeMin, rangeMax, ifValueOnBorder, pixelDataHSV, stride, pixelHeight);
+            }
+            
+            // left top
+            if (x >= 12 && y > 2 && !(alreadyChecked[(y - 3) * stride + x - 12]))
+            {
+                floodFillAlg(x - 12, y - 3, rangeMin, rangeMax, ifValueOnBorder, pixelDataHSV, stride, pixelHeight);
+            }
+            // right top
+            if (x < stride - 12 && y > 2 && !(alreadyChecked[(y - 3) * stride + x + 12]))
+            {
+                floodFillAlg(x + 12, y - 3, rangeMin, rangeMax, ifValueOnBorder, pixelDataHSV, stride, pixelHeight);
+            }
+            // left bottom
+            if (x >= 12 && y < pixelHeight - 3 && !(alreadyChecked[(y + 3) * stride + x - 12]))
+            {
+                floodFillAlg(x - 12, y + 3, rangeMin, rangeMax, ifValueOnBorder, pixelDataHSV, stride, pixelHeight);
+            }
+            // right bottom
+            if (x < stride - 12 && y < pixelHeight - 3 && !(alreadyChecked[(y + 3) * stride + x + 12]))
+            {
+                floodFillAlg(x + 12, y + 3, rangeMin, rangeMax, ifValueOnBorder, pixelDataHSV, stride, pixelHeight);
+            }
+            
+        }
+        */
     }
 }
