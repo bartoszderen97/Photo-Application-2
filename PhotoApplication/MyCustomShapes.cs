@@ -175,9 +175,12 @@ namespace PhotoApplication
             double pointX, pointY;
             pointX = (point.X / actualWidth) * stride;
             pointY = (point.Y / actualHeight) * pixelHeight;
+
+            if ((int)pointX % 4 != 0)
+                pointX -= pointX % 4;
             double value = pixelDataHSV[(int)pointY * stride + (int)pointX];
 
-            borderColor = new SolidColorBrush(Color.FromRgb(pixelDataRGB[(int)pointY*stride+(int)pointX+2], pixelDataRGB[(int)pointY * stride + (int)pointX + 1], pixelDataRGB[(int)pointY * stride + (int)pointX]));
+            borderColor = new SolidColorBrush(Color.FromRgb(pixelDataRGB[(int)pointY*stride+(int)pointX + 2], pixelDataRGB[(int)pointY * stride + (int)pointX + 1], pixelDataRGB[(int)pointY * stride + (int)pointX]));
 
             double rangeMin, rangeMax;
             bool ifValueOnBorder = false;
@@ -220,7 +223,7 @@ namespace PhotoApplication
             }
             return selectedPixels;
         }
-        /*
+        
         public static bool[] getSelectedPixelsArrayForWand(Point point, double[] pixelDataHSV, int stride, int pixelHeight, double actualHeight, double actualWidth)
         {
             selectedPixels = new bool[stride * pixelHeight + 4];
@@ -231,32 +234,16 @@ namespace PhotoApplication
             pointX = (point.X / actualWidth) * stride;
             pointY = (point.Y / actualHeight) * pixelHeight;
             double value = pixelDataHSV[(int)pointY * stride + (int)pointX];
-            
+
+            if ((int)pointX % 4 != 4)
+                pointX -= pointX % 4;
 
             double rangeMin, rangeMax, range = 20;
             bool ifValueOnBorder = false;
 
-            if (value < range)
-            {
-                rangeMax = value + range;
-                rangeMin = 360 + value - range;
-                ifValueOnBorder = true;
-            }
-            else if (value > 360 - range)
-            {
-                rangeMin = value - range;
-                rangeMax = rangeMin - 360 - range;
-                ifValueOnBorder = true;
-            }
-            else
-            {
-                rangeMin = value - range;
-                rangeMax = value + range;
-            }
-
-            floodFillAlg((int)pointX, (int)pointY, rangeMin, rangeMax, ifValueOnBorder, pixelDataHSV, stride, pixelHeight);
-
-            return selectedPixels;
+            WandHelper wandHelper = new WandHelper(range, value, pixelDataHSV, stride, pixelHeight);
+            
+            return wandHelper.WandAlg((int)pointX, (int)pointY);
         }
         public static List<Ellipse> getBorderPoints(int stride, int pixelHeight, double actualHeight, double actualWidth)
         {
@@ -395,6 +382,6 @@ namespace PhotoApplication
             }
             
         }
-        */
+        
     }
 }

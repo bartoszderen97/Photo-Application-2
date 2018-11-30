@@ -425,10 +425,11 @@ namespace PhotoApplication
                     hsvpixels = myConversion.getPixelDataHSV();
                 }
                 MyCustomShapes.range = rangeSlider.Value;
-                myConversion.setSelectedPixels(MyCustomShapes.getSelectedPixelsArrayForWand2(e.GetPosition((Canvas)sender), hsvpixels, rgbpixels, myConversion.getStride(), orginalPhoto.PixelHeight, canvas.ActualHeight, canvas.ActualWidth));
-                selectedColorLabel.Background = MyCustomShapes.borderColor;
-                /*
+                //myConversion.setSelectedPixels(MyCustomShapes.getSelectedPixelsArrayForWand2(e.GetPosition((Canvas)sender), hsvpixels, rgbpixels, myConversion.getStride(), orginalPhoto.PixelHeight, canvas.ActualHeight, canvas.ActualWidth));
+                //selectedColorLabel.Background = MyCustomShapes.borderColor;
+                
                 myConversion.setSelectedPixels(MyCustomShapes.getSelectedPixelsArrayForWand(e.GetPosition((Canvas)sender), hsvpixels, myConversion.getStride(), orginalPhoto.PixelHeight, canvas.ActualHeight, canvas.ActualWidth));
+                /*
                 List<Ellipse> points = MyCustomShapes.getBorderPoints(myConversion.getStride(), orginalPhoto.PixelHeight, canvas.ActualHeight, canvas.ActualWidth);
                 for (int i = 0; i < points.Count; i++)
                 {
