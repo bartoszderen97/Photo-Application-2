@@ -371,6 +371,11 @@ namespace PhotoApplication
 
         private void rangeSlider_SizeChanged(object sender, SizeChangedEventArgs e)
         {
+            
+        }
+
+        private void rangeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
             MyCustomShapes.range = rangeSlider.Value;
         }
 

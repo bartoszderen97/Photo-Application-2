@@ -69,7 +69,7 @@
                         <RadioButton x:Name="wandSelectionRb" Content="zaznaczenie &quot;różdżka&quot;" Click="SelectionRb_Click">
                             
                         </RadioButton>
-                        <Slider x:Name="rangeSlider" Maximum="80" Minimum="5" LargeChange="10" TickFrequency="5" IsSnapToTickEnabled="True" TickPlacement="BottomRight" SizeChanged="rangeSlider_SizeChanged" Value="5"/>
+                        <Slider x:Name="rangeSlider" Maximum="80" Minimum="5" LargeChange="10" TickFrequency="5" IsSnapToTickEnabled="True" TickPlacement="BottomRight" SizeChanged="rangeSlider_SizeChanged" Value="5" ValueChanged="rangeSlider_ValueChanged"/>
                         <Label Content="zaznaczony kolor:">
                             
                         </Label>

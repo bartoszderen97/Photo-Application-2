@@ -15,7 +15,7 @@ namespace PhotoApplication
     class MyCustomShapes
     {
         public static SolidColorBrush borderColor = new SolidColorBrush(Colors.Blue);
-        public static double range = 20;
+        public static double range;
 
         public static bool[] selectedPixels, alreadyChecked, borderPixels;
         public static Rectangle drawMyRectangle(ref Canvas canvas, Point first, Point second)
@@ -233,13 +233,10 @@ namespace PhotoApplication
             double pointX, pointY;
             pointX = (point.X / actualWidth) * stride;
             pointY = (point.Y / actualHeight) * pixelHeight;
-            double value = pixelDataHSV[(int)pointY * stride + (int)pointX];
-
+            
             if ((int)pointX % 4 != 4)
                 pointX -= pointX % 4;
-
-            double rangeMin, rangeMax, range = 20;
-            bool ifValueOnBorder = false;
+            double value = pixelDataHSV[(int)pointY * stride + (int)pointX];
 
             WandHelper wandHelper = new WandHelper(range, value, pixelDataHSV, stride, pixelHeight);
             
