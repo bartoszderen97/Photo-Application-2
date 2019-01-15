@@ -28,7 +28,7 @@ namespace PhotoApplication
         private int clickCounter = 0;
         private Point firstPoint, secondPoint;   // points to draw shapes
         private List<Rectangle> rects;
-        private List<Ellipse> ellipses;
+        private List<Ellipse> ellipses, myPoints;
 
         public MainWindow()
         {
@@ -43,6 +43,7 @@ namespace PhotoApplication
             changeChbxState(false);
             rects = new List<Rectangle>();
             ellipses = new List<Ellipse>();
+            myPoints = new List<Ellipse>();
         }
 
         private void checkIfHistogramOpen()
@@ -56,16 +57,11 @@ namespace PhotoApplication
 
         public void deleteShapes()
         {
-            for (int i = 0; i < rects.Count; i++)
-            {
-                canvas.Children.Remove(rects[i]);
-            }
-            for (int i = 0; i < ellipses.Count; i++)
-            {
-                canvas.Children.Remove(ellipses[i]);
-            }
+            
+            canvas.Children.RemoveRange(1, canvas.Children.Count);
             rects.Clear();
             ellipses.Clear();
+            myPoints.Clear();
             clickCounter = 0;
             firstPoint = new Point();
             secondPoint = new Point();
@@ -430,17 +426,39 @@ namespace PhotoApplication
                     hsvpixels = myConversion.getPixelDataHSV();
                 }
                 MyCustomShapes.range = rangeSlider.Value;
-                //myConversion.setSelectedPixels(MyCustomShapes.getSelectedPixelsArrayForWand2(e.GetPosition((Canvas)sender), hsvpixels, rgbpixels, myConversion.getStride(), orginalPhoto.PixelHeight, canvas.ActualHeight, canvas.ActualWidth));
-                //selectedColorLabel.Background = MyCustomShapes.borderColor;
+                
+                selectedColorLabel.Background = MyCustomShapes.borderColor;
                 
                 myConversion.setSelectedPixels(MyCustomShapes.getSelectedPixelsArrayForWand(e.GetPosition((Canvas)sender), hsvpixels, myConversion.getStride(), orginalPhoto.PixelHeight, canvas.ActualHeight, canvas.ActualWidth));
-                /*
-                List<Ellipse> points = MyCustomShapes.getBorderPoints(myConversion.getStride(), orginalPhoto.PixelHeight, canvas.ActualHeight, canvas.ActualWidth);
-                for (int i = 0; i < points.Count; i++)
+
+                int s = myConversion.getStride();
+                bool[] borderPixels = WandHelper.getBorder();
+
+                myPoints = new List<Ellipse>();
+
+                for (int y = 0; y < currentPhoto.PixelHeight; y++)
                 {
-                    canvas.Children.Add(points[i]);
+                    int yIndex = y * s;
+                    for (int x = 0; x < s; x += 4)
+                    {
+                        if (borderPixels[yIndex + x]) 
+                        {
+                            int dotSize = 3;
+                            double w = ((double)x / currentPhoto.PixelWidth / 4) * canvas.ActualWidth, h = ((double)y / currentPhoto.PixelHeight) * canvas.ActualHeight;
+                            Ellipse currentDot = new Ellipse();
+                            currentDot.Stroke = new SolidColorBrush(Colors.Green);
+                            currentDot.StrokeThickness = 3;
+                            currentDot.Height = dotSize;
+                            currentDot.Width = dotSize;
+                            currentDot.Fill = new SolidColorBrush(Colors.Green);
+                            currentDot.Margin = new Thickness(w , h, 0, 0);
+                            myPoints.Add(currentDot);
+                            canvas.Children.Add(currentDot);
+                        }
+                    }
                 }
-                */
+                
+                
             }
             
         }

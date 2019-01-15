@@ -237,10 +237,12 @@ namespace PhotoApplication
             if ((int)pointX % 4 != 4)
                 pointX -= pointX % 4;
             double value = pixelDataHSV[(int)pointY * stride + (int)pointX];
-
-            WandHelper wandHelper = new WandHelper(range, value, pixelDataHSV, stride, pixelHeight);
             
-            return wandHelper.WandAlg((int)pointX, (int)pointY);
+            WandHelper wandHelper = new WandHelper(range, value, pixelDataHSV, stride, pixelHeight);
+            selectedPixels = wandHelper.WandAlg((int)pointX, (int)pointY);
+            borderPixels = wandHelper.GetBorderArray();
+
+            return selectedPixels;
         }
         public static List<Ellipse> getBorderPoints(int stride, int pixelHeight, double actualHeight, double actualWidth)
         {
@@ -255,7 +257,6 @@ namespace PhotoApplication
                     Ellipse currentDot = new Ellipse();
                     currentDot.Stroke = new SolidColorBrush(Colors.Green);
                     currentDot.StrokeThickness = 3;
-                    Canvas.SetZIndex(currentDot, 3);
                     currentDot.Height = dotSize;
                     currentDot.Width = dotSize;
                     currentDot.Fill = new SolidColorBrush(Colors.Green);

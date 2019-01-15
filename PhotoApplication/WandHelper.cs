@@ -12,11 +12,14 @@ namespace PhotoApplication
         private int value, range, maxRange, minRange;
         private bool ifValueOnBorder;
 
-        private bool[] selectedPixels, borderPixels;
+        private static bool[] selectedPixels, borderPixels;
         private double[] pdHSV;
         private int height, stride;
 
-
+        public static bool[] getBorder()
+        {
+            return borderPixels;
+        }
         public WandHelper(double r, double v, double[] pdh, int s, int ph)
         {
             range = (int)r;
@@ -26,6 +29,7 @@ namespace PhotoApplication
             value = (int)v;
             setRange();
             selectedPixels = new bool[stride * height + 4];
+            borderPixels = new bool[stride * height + 4];
         }
         protected void setRange()
         {
@@ -52,8 +56,10 @@ namespace PhotoApplication
         public bool[] WandAlg(int x, int y)
         {
             int offset = 0, endLoop = 0;
-            selectedPixels = new bool[stride * height + 4];
             selectedPixels[y * stride + x] = true;
+            int maxOffset = stride;
+            if (stride / 4 < height)
+                maxOffset = height;
 
             do
             {
@@ -239,7 +245,7 @@ namespace PhotoApplication
 
                 Debug.WriteLine(endLoop);
             }
-            while (endLoop < (offset * 2) * 4 && endLoop<50000);
+            while (endLoop < (offset * 2) * 4 && maxOffset >= offset);
 
             return selectedPixels;
         }
@@ -257,6 +263,46 @@ namespace PhotoApplication
 
             return false;
         }
+        public bool[] GetBorderArray()
+        {
+            int[] filter = { -1, -1, -1, -1, 8, -1, -1, -1, -1 };
 
+            for (int y = 1; y < height - 1; y++)
+            {
+                int yIndex = y * stride, yIndexLower = (y - 1) * stride, yIndexUpper = (y + 1) * stride;
+
+                for (int x = 4; x < stride - 4; x += 4)
+                {
+                    if (selectedPixels[x + yIndex])
+                    {
+                        int sum = 0;
+                        if (selectedPixels[x - 4 + yIndexLower])
+                            sum += filter[0];
+                        if (selectedPixels[x + yIndexLower])
+                            sum += filter[1];
+                        if (selectedPixels[x + 4 + yIndexLower])
+                            sum += filter[2];
+
+                        if (selectedPixels[x - 4 + yIndex])
+                            sum += filter[3];
+                        if (selectedPixels[x + yIndex])
+                            sum += filter[4];
+                        if (selectedPixels[x + 4 + yIndex])
+                            sum += filter[5];
+
+                        if (selectedPixels[x - 4 + yIndexUpper])
+                            sum += filter[6];
+                        if (selectedPixels[x + yIndexUpper])
+                            sum += filter[7];
+                        if (selectedPixels[x + 4 + yIndexUpper])
+                            sum += filter[8];
+
+                        if (sum > 0)
+                            borderPixels[yIndex + x] = true;
+                    }
+                }
+            }
+            return borderPixels;
+        }
     }
 }
